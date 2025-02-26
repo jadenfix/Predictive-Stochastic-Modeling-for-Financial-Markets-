@@ -5,7 +5,7 @@ Hello! This project is based on my undergraduate thesis, *Predictive Stochastic 
 
 By integrating **Bayesian inference**, **time-series econometrics**, and **machine learning-inspired forecasting**, this research provides insights into the dynamics of market downturns, contributing to both academic literature and practical investment strategies.  
 
-📄 **Read the full thesis here:** [Predictive Stochastic Modeling for Financial Markets](https://github.com/jadenfix/Predictive-Stochastic-Modeling-for-Financial-Markets-/blob/main/Predictive%20Stochastic%20Modeling%20for%20Financial%20Markets.pdf)  
+📄 **Read the full thesis here:** [Predictive Stochastic Modeling for Financial Markets]([https://github.com/jadenfix/Predictive-Stochastic-Modeling-for-Financial-Markets-/blob/main/Predictive%20Stochastic%20Modeling%20for%20Financial%20Markets.pdf](https://github.com/jadenfix/Predictive-Stochastic-Modeling-for-Financial-Markets-/blob/main/Predictive_Stochastic_Modeling_for_Financial_Markets.pdf))  
 
 ---
 
