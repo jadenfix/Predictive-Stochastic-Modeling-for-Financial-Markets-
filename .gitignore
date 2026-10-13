@@ -1,0 +1,6 @@
+research-output*/
+Rplots.pdf
+.venv/
+correlation_matrix.csv
+*_autocorrelation.csv
+stattest.csv
