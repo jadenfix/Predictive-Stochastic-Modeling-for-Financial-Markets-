@@ -16,6 +16,8 @@ jobs:
           sudo apt-get install -y --no-install-recommends r-base-core r-cran-xts r-cran-dplyr r-cran-knitr r-cran-urca r-cran-nlme
           mkdir -p "$R_LIBS_USER"
           Rscript -e 'install.packages("MSwM",repos="https://cloud.r-project.org",dependencies=FALSE)'
+      - run: Rscript test_forecast_evaluation.R
+      - run: Rscript run_forecast_evaluation.R
       - run: Rscript test_temporal.R
       - run: Rscript run_regime_core.R
       - run: Rscript run_regime_core.R --past-only
