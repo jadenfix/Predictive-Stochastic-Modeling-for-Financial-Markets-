@@ -1,0 +1,29 @@
+[
+  {
+    "repo": "Predictive-Stochastic-Modeling-for-Financial-Markets-",
+    "file": "one45.csv",
+    "rows": 1492,
+    "valid_dates": 1491,
+    "date_start": "1900-01-01",
+    "date_end": "2024-03-01",
+    "chronological_monotone": false,
+    "duplicate_dates": 0,
+    "comparison": "finite original realpricelag vs chronological realprice.shift(-1), atol0.01 rtol0; separately vs shift(+1)",
+    "future_pairs": 1490,
+    "future_matches": 1490,
+    "past_pairs": 1490,
+    "past_matches": 3,
+    "invalid_date_rows": [
+      1491
+    ],
+    "valid_date_rows_monotonic": true,
+    "invalid_date_policy": "Trailing non-observation row excluded by original study row selection; date and nofuture checks applied to corrected fitting rows.",
+    "comparable_date_start": "1900-01-01",
+    "comparable_date_end": "2024-02-01",
+    "formula_usage": [
+      "realpricets <- ts(xts$realprice, start=c(1960,1), end=c(2023,12), frequency=12)",
+      "realpricetslag <- ts(xts$realpricelag, start=c(1960,1), end=c(2023,12), frequency=12)",
+      "msmod1 <- lm(realpricets ~ realpricetslag)"
+    ]
+  }
+]

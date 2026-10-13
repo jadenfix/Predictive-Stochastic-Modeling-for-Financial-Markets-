@@ -1,0 +1,21 @@
+name: Markov fitting core
+on: [push, pull_request]
+jobs:
+  fit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      R_LIBS_USER: ${{ runner.temp }}/r-library
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install narrow research dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends r-base-core r-cran-xts r-cran-dplyr r-cran-knitr r-cran-urca r-cran-nlme
+          mkdir -p "$R_LIBS_USER"
+          Rscript -e 'install.packages("MSwM",repos="https://cloud.r-project.org",dependencies=FALSE)'
+      - run: Rscript test_temporal.R
+      - run: Rscript run_regime_core.R
+      - run: Rscript run_regime_core.R --past-only
