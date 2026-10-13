@@ -44,3 +44,13 @@ This project demonstrates advanced skills in **financial time-series modeling**,
 - **R Programming for Quantitative Finance:** Development of reproducible code for robust empirical analysis.
 
 If you have any questions or would like to discuss the research further, please feel free to reach out. Let's connect and explore the exciting intersection of finance and data science! 🚀
+
+## Original research reproduction
+
+```bash
+# Run from the repository root with R installed.
+Rscript install_dependencies.R
+Rscript run_research.R
+```
+
+The runner executes `code.R` with committed original data; pass an archived R filename as the first argument to select another script. Exploratory intermediate sections remain research artifacts. R was unavailable here, so package installation, convergence and complete outputs remain unverified. No replacement observations or estimators are supplied.
