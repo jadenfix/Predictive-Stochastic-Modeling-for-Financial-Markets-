@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      R_LIBS_USER: ${{ runner.temp }}/r-library
+      R_LIBS_USER: /tmp/research-r-library
       OPENBLAS_NUM_THREADS: '1'
       OMP_NUM_THREADS: '1'
     steps:
