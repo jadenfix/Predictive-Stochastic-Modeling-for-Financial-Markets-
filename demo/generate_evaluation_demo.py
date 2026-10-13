@@ -117,6 +117,23 @@ def scene_forward(helper_hash: str) -> Image.Image:
     return image
 
 
+def scene_purged_split(helper_hash: str) -> Image.Image:
+    image, draw = canvas()
+    centered(draw, "Multi-step split boundary", 38, 34, bold=True)
+    centered(draw, "h = 2, nominal 50% split", 85, 22, color=MUTED)
+    draw.rounded_rectangle((70, 130, 890, 410), radius=24, fill=PANEL, outline="#334269", width=2)
+    draw.text((115, 165), "KEEP", font=font(22, True), fill=GREEN)
+    draw.text((250, 165), "Jan predictor  →  Mar target", font=font(23), fill=TEXT)
+    draw.text((115, 225), "PURGE", font=font(22, True), fill=RED)
+    draw.text((250, 225), "Feb predictor  →  Apr target", font=font(23), fill=TEXT)
+    draw.text((115, 285), "TEST", font=font(22, True), fill=BLUE)
+    draw.text((250, 285), "first predictor origin: Mar", font=font(23), fill=TEXT)
+    draw.line((105, 335, 855, 335), fill="#334269", width=2)
+    centered(draw, "last training target ≤ first test predictor", 355, 23, color=GREEN, bold=True)
+    footer(draw, helper_hash)
+    return image
+
+
 def scene_metric(helper_hash: str) -> Image.Image:
     image, draw = canvas()
     centered(draw, "True MSPE keeps cancelling errors visible", 38, 34, bold=True)
@@ -142,8 +159,9 @@ def scene_limits(helper_hash: str) -> Image.Image:
     draw.rounded_rectangle((90, 130, 870, 395), radius=24, fill=PANEL, outline="#334269", width=2)
     draw.text((135, 165), "✓  Target date is later than predictor date", font=font(24), fill=GREEN)
     draw.text((135, 215), "✓  MSPE is the mean of squared errors", font=font(24), fill=GREEN)
-    draw.text((135, 280), "Not established:", font=font(23, True), fill=YELLOW)
-    draw.text((135, 325), "regime accuracy, forecast skill, calibration, or trading returns", font=font(20), fill=TEXT)
+    draw.text((135, 265), "✓  Training labels do not cross the first test origin", font=font(22), fill=GREEN)
+    draw.text((135, 315), "Not established:", font=font(22, True), fill=YELLOW)
+    draw.text((135, 355), "regime accuracy, forecast skill, calibration, or trading returns", font=font(19), fill=TEXT)
     footer(draw, helper_hash)
     return image
 
@@ -154,6 +172,7 @@ def render() -> None:
         scene_title(helper_hash),
         scene_backward(helper_hash),
         scene_forward(helper_hash),
+        scene_purged_split(helper_hash),
         scene_metric(helper_hash),
         scene_limits(helper_hash),
     ]

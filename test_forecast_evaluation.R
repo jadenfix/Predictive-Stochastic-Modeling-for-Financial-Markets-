@@ -37,16 +37,36 @@ stopifnot(
   changed$target[4] == 99999
 )
 
-# Each horizon receives its own split index based on its own aligned row count.
-expected_rows <- length(dates) - 1:4
+# At h=2, a nominal 50% split would let an April training label cross the
+# first March test origin. The overlapping row must be purged.
+split <- chronological_split(aligned, 0.5)
+stopifnot(
+  split$split_index == 2L,
+  nrow(split$train) == 1L,
+  nrow(split$purged) == 1L,
+  nrow(split$test) == 2L,
+  split$train$predictor_date == dates[1],
+  split$train$target_date == dates[3],
+  split$purged$predictor_date == dates[2],
+  split$purged$target_date == dates[4],
+  split$test$predictor_date[1] == dates[3],
+  max(split$train$target_date) <= min(split$test$predictor_date)
+)
+
+# Each horizon gets its own boundary. For fixed horizons, h-1 nominal training
+# rows cross the first test origin and are purged.
+long_dates <- seq.Date(as.Date("2020-01-01"), by = "month", length.out = 12)
+long_predictors <- data.frame(signal = seq_along(long_dates))
+long_target <- seq_along(long_dates) * 10
 for (horizon in 1:4) {
-  horizon_data <- forward_horizon_inputs(dates, predictors, target, horizon)
+  horizon_data <- forward_horizon_inputs(long_dates, long_predictors, long_target, horizon)
   split <- chronological_split(horizon_data, 0.5)
-  expected_train <- max(1L, min(floor(expected_rows[horizon] * 0.5), expected_rows[horizon] - 1L))
   stopifnot(
-    nrow(horizon_data) == expected_rows[horizon],
-    nrow(split$train) == expected_train,
-    nrow(split$test) == expected_rows[horizon] - expected_train,
+    nrow(horizon_data) == length(long_dates) - horizon,
+    nrow(split$purged) == horizon - 1L,
+    nrow(split$train) + nrow(split$purged) == split$split_index,
+    nrow(split$test) == nrow(horizon_data) - split$split_index,
+    max(split$train$target_date) <= min(split$test$predictor_date),
     max(split$train$predictor_date) < min(split$test$predictor_date)
   )
 }
@@ -73,5 +93,11 @@ must_fail(forward_horizon_inputs(dates, predictors[-1, , drop = FALSE], target, 
 must_fail(mean_squared_prediction_error(c(1, NA), c(1, 2)))
 must_fail(mspe_ratio(c(1, 2), c(1, 2), c(1, 2)))
 must_fail(chronological_split(aligned, 1))
+bad_target_order <- aligned
+bad_target_order$target_date[c(2, 3)] <- bad_target_order$target_date[c(3, 2)]
+must_fail(chronological_split(bad_target_order, 0.5))
+must_fail(chronological_split(aligned[c("signal", "target")], 0.5))
+short_horizon_four <- forward_horizon_inputs(dates, predictors, target, 4)
+must_fail(chronological_split(short_horizon_four, 0.5))
 
-cat("Forward alignment, chronological split, and true MSPE checks passed\n")
+cat("Forward alignment, purged chronological split, and true MSPE checks passed\n")

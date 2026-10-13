@@ -81,10 +81,12 @@ Rscript run_forecast_evaluation.R
 
 `forward_horizon_inputs()` pairs predictors observed at date *t* with a target
 at date *t + h* and records both dates. `chronological_split()` computes the
-split independently for each aligned horizon. `mean_squared_prediction_error()`
-uses the mean of squared errors, and `mspe_ratio()` compares that quantity with
-a non-zero benchmark MSPE. The runner writes small synthetic, hand-checkable
-CSVs under `evaluation-output/`.
+split independently for each aligned horizon, requires strictly increasing
+predictor and target dates, and purges nominal training rows whose target date
+falls after the first test predictor date. `mean_squared_prediction_error()` uses
+the mean of squared errors, and `mspe_ratio()` compares that quantity with a
+non-zero benchmark MSPE. The runner writes small synthetic, hand-checkable CSVs
+under `evaluation-output/`, including the retained, purged, and test rows.
 
 This layer verifies date direction and metric arithmetic only. It does not turn
 the archived full-sample regime probabilities into leakage-free labels, validate

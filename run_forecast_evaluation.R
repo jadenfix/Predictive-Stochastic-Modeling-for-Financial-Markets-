@@ -23,6 +23,19 @@ aligned <- forward_horizon_inputs(
   horizon = 2
 )
 write.csv(aligned, file.path(outdir, "forward-horizon-2.csv"), row.names = FALSE)
+split <- chronological_split(aligned, 0.5)
+write.csv(split$train, file.path(outdir, "split-train.csv"), row.names = FALSE)
+write.csv(split$purged, file.path(outdir, "split-purged.csv"), row.names = FALSE)
+write.csv(split$test, file.path(outdir, "split-test.csv"), row.names = FALSE)
+split_summary <- data.frame(
+  nominal_split_index = split$split_index,
+  train_rows = nrow(split$train),
+  purged_rows = nrow(split$purged),
+  test_rows = nrow(split$test),
+  last_train_target = max(split$train$target_date),
+  first_test_predictor = min(split$test$predictor_date)
+)
+write.csv(split_summary, file.path(outdir, "split-summary.csv"), row.names = FALSE)
 
 actual <- c(0.5, 0.5)
 prediction <- c(1, 0)
@@ -48,4 +61,5 @@ writeLines(c(
 ), file.path(outdir, "LIMITATIONS.txt"))
 
 print(aligned)
+print(split_summary)
 print(metrics)

@@ -78,21 +78,38 @@ chronological_split <- function(aligned, train_fraction = 0.8) {
       !is.finite(train_fraction) || train_fraction <= 0 || train_fraction >= 1) {
     stop("train_fraction must be between zero and one")
   }
-  if (all(c("predictor_date", "target_date") %in% names(aligned))) {
-    predictor_dates <- as.Date(aligned$predictor_date)
-    target_dates <- as.Date(aligned$target_date)
-    if (anyNA(predictor_dates) || anyNA(target_dates) ||
-        is.unsorted(predictor_dates, strictly = TRUE) ||
-        any(predictor_dates >= target_dates)) {
-      stop("Aligned rows must be chronological forward pairs")
-    }
+  required_dates <- c("predictor_date", "target_date")
+  if (!all(required_dates %in% names(aligned))) {
+    stop("Aligned data must include predictor_date and target_date")
+  }
+  predictor_dates <- as.Date(aligned$predictor_date)
+  target_dates <- as.Date(aligned$target_date)
+  if (anyNA(predictor_dates) || anyNA(target_dates) ||
+      is.unsorted(predictor_dates, strictly = TRUE) ||
+      is.unsorted(target_dates, strictly = TRUE) ||
+      any(predictor_dates >= target_dates)) {
+    stop("Predictor and target dates must be strictly increasing forward pairs")
   }
 
   split_index <- floor(nrow(aligned) * train_fraction)
   split_index <- max(1L, min(split_index, nrow(aligned) - 1L))
+  train_candidates <- aligned[seq_len(split_index), , drop = FALSE]
+  test <- aligned[seq.int(split_index + 1L, nrow(aligned)), , drop = FALSE]
+  first_test_origin <- min(as.Date(test$predictor_date))
+  keep <- as.Date(train_candidates$target_date) <= first_test_origin
+  train <- train_candidates[keep, , drop = FALSE]
+  purged <- train_candidates[!keep, , drop = FALSE]
+  if (!nrow(train)) {
+    stop("Purged boundary leaves no training observations")
+  }
+  rownames(train) <- NULL
+  rownames(purged) <- NULL
+  rownames(test) <- NULL
+  stopifnot(max(as.Date(train$target_date)) <= min(as.Date(test$predictor_date)))
   list(
-    train = aligned[seq_len(split_index), , drop = FALSE],
-    test = aligned[seq.int(split_index + 1L, nrow(aligned)), , drop = FALSE],
+    train = train,
+    purged = purged,
+    test = test,
     split_index = split_index
   )
 }
