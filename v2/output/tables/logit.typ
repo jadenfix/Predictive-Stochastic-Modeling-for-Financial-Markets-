@@ -2,9 +2,10 @@
   caption: [Full-sample logit and probit models of a dated bear market h months ahead],
   kind: table,
   [
-    #set text(size: 8.5pt)
+    #set text(size: 8pt, hyphenate: false)
+    #set par(justify: false, first-line-indent: 0em)
     #table(
-      columns: (1.5fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr),
+      columns: (2.3fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr),
       align: (left, center, center, center, center, center, center, center, center),
       stroke: none,
       inset: (x: 3pt, y: 2.4pt),
@@ -23,7 +24,7 @@
       [], [(0.42)], [(0.42)], [(0.41)], [(0.43)], [(0.23)], [(0.24)], [(0.24)], [(0.25)],
       table.cell(colspan: 9, inset: (y: 1.5pt))[],
       table.cell(colspan: 9, align: left)[_Macroeconomic_],
-      [Inflation (CPI, 12-month)], [0.82#super[\*\*\*]], [0.77#super[\*\*\*]], [0.67#super[\*\*\*]], [0.52#super[\*\*]], [0.46#super[\*\*\*]], [0.43#super[\*\*\*]], [0.39#super[\*\*\*]], [0.31#super[\*\*]],
+      [CPI inflation, 12-month], [0.82#super[\*\*\*]], [0.77#super[\*\*\*]], [0.67#super[\*\*\*]], [0.52#super[\*\*]], [0.46#super[\*\*\*]], [0.43#super[\*\*\*]], [0.39#super[\*\*\*]], [0.31#super[\*\*]],
       [], [(0.26)], [(0.25)], [(0.23)], [(0.22)], [(0.14)], [(0.14)], [(0.13)], [(0.13)],
       [12-month change in 10-year yield], [0.22], [0.21], [0.23], [0.27#super[\*]], [0.14#super[\*]], [0.14], [0.14], [0.15#super[\*]],
       [], [(0.15)], [(0.15)], [(0.15)], [(0.15)], [(0.09)], [(0.09)], [(0.09)], [(0.09)],
@@ -42,6 +43,6 @@
       [Observations], [1,362], [1,360], [1,357], [1,351], [1,362], [1,360], [1,357], [1,351],
       table.hline(stroke: 0.9pt),
     )
-    #block(width: 100%, above: 0.5em)[#set text(size: 7.5pt); #set par(justify: true); #align(left)[_Notes:_ Dependent variable: 1 if month t+h lies in a dated bear market (Table 2). Predictors are measured at t and standardized. Newey-West standard errors in parentheses (9, 9, 9, 12 lags by horizon). Forecast origins 1910:06 to 2023:11 for h = 1. \* p \< 0.10, \*\* p \< 0.05, \*\*\* p \< 0.01 (two-sided). In-sample estimates over the whole period; Table 6 reports real-time forecasts.]]
+    #block(width: 100%, above: 0.5em)[#set text(size: 7.5pt); #set par(justify: true); #align(left)[_Notes:_ Dependent variable: 1 if month t+h lies in a dated bear market. Predictors are measured at t and standardized. Newey-West standard errors in parentheses (9, 9, 9, 12 lags by horizon). Forecast origins 1910:06 to 2023:11 for h = 1. \* p \< 0.10, \*\* p \< 0.05, \*\*\* p \< 0.01 (two-sided). In-sample estimates over the whole period, not real-time forecasts.]]
   ],
 ) <tab:logit>

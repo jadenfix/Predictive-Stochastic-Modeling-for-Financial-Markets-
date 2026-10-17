@@ -2,9 +2,10 @@
   caption: [Out-of-sample accuracy of real-time bear-market forecasts, targets 1960:02-2023:12],
   kind: table,
   [
-    #set text(size: 8.5pt)
+    #set text(size: 8.5pt, hyphenate: false)
+    #set par(justify: false, first-line-indent: 0em)
     #table(
-      columns: (1.9fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr),
+      columns: (2.6fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr),
       align: (left, center, center, center, center, center, center),
       stroke: none,
       inset: (x: 3pt, y: 2.4pt),
@@ -15,16 +16,16 @@
       table.hline(stroke: 0.5pt),
       table.cell(colspan: 7, align: left)[_h = 1 (767 forecasts, bear share 22.7%)_],
       [Unconditional frequency], [0.198], [0.0], [0.587], [0.563], [], [],
-      [Persistence (real-time state)], [0.161], [18.9], [0.502], [0.688], [0.000], [],
-      [MS-AR(1) filtered probability], [0.176], [10.9], [0.537], [0.702], [0.000], [0.987],
-      [Logit: dividend yield], [0.165], [16.5], [0.527], [0.627], [0.000], [0.680],
-      [Logit: all predictors], [0.157], [20.8], [0.488], [0.780], [0.000], [0.316],
-      [Probit: all predictors], [0.155], [21.5], [0.487], [0.779], [0.000], [0.256],
-      [Logit: all predictors + state], [0.159], [19.9], [0.497], [0.772], [0.000], [0.387],
+      [Persistence (real-time state)], [0.161], [18.9], [0.502], [0.688], [\<0.001], [],
+      [MS-AR(1) filtered probability], [0.176], [10.9], [0.537], [0.702], [\<0.001], [0.987],
+      [Logit: dividend yield], [0.165], [16.5], [0.527], [0.627], [\<0.001], [0.680],
+      [Logit: all predictors], [0.157], [20.8], [0.488], [0.780], [\<0.001], [0.316],
+      [Probit: all predictors], [0.155], [21.5], [0.487], [0.779], [\<0.001], [0.256],
+      [Logit: all predictors + state], [0.159], [19.9], [0.497], [0.772], [\<0.001], [0.387],
       table.cell(colspan: 7, inset: (y: 1.5pt))[],
       table.cell(colspan: 7, align: left)[_h = 3 (765 forecasts, bear share 22.7%)_],
       [Unconditional frequency], [0.199], [0.0], [0.589], [0.547], [], [],
-      [Persistence (real-time state)], [0.176], [11.5], [0.537], [0.636], [0.001], [],
+      [Persistence (real-time state)], [0.176], [11.5], [0.537], [0.636], [\<0.001], [],
       [MS-AR(1) filtered probability], [0.193], [3.0], [0.575], [0.618], [0.182], [0.994],
       [Logit: dividend yield], [0.175], [12.3], [0.545], [0.586], [0.001], [0.433],
       [Logit: all predictors], [0.187], [6.2], [0.563], [0.675], [0.134], [0.878],

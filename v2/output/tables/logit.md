@@ -8,7 +8,7 @@
 | Log CAPE | 0.57 | 0.71\* | 0.81\*\* | 0.92\*\* | 0.32 | 0.40\* | 0.48\*\* | 0.55\*\* |
 |  | (0.42) | (0.42) | (0.41) | (0.43) | (0.23) | (0.24) | (0.24) | (0.25) |
 | *Macroeconomic* | | | | | | | | |
-| Inflation (CPI, 12-month) | 0.82\*\*\* | 0.77\*\*\* | 0.67\*\*\* | 0.52\*\* | 0.46\*\*\* | 0.43\*\*\* | 0.39\*\*\* | 0.31\*\* |
+| CPI inflation, 12-month | 0.82\*\*\* | 0.77\*\*\* | 0.67\*\*\* | 0.52\*\* | 0.46\*\*\* | 0.43\*\*\* | 0.39\*\*\* | 0.31\*\* |
 |  | (0.26) | (0.25) | (0.23) | (0.22) | (0.14) | (0.14) | (0.13) | (0.13) |
 | 12-month change in 10-year yield | 0.22 | 0.21 | 0.23 | 0.27\* | 0.14\* | 0.14 | 0.14 | 0.15\* |
 |  | (0.15) | (0.15) | (0.15) | (0.15) | (0.09) | (0.09) | (0.09) | (0.09) |
@@ -24,4 +24,4 @@
 | AIC | 1,280.7 | 1,408.3 | 1,489.1 | 1,540.1 | 1,282.4 | 1,407.9 | 1,488.8 | 1,541.2 |
 | Observations | 1,362 | 1,360 | 1,357 | 1,351 | 1,362 | 1,360 | 1,357 | 1,351 |
 
-Notes: Dependent variable: 1 if month t+h lies in a dated bear market (Table 2). Predictors are measured at t and standardized. Newey-West standard errors in parentheses (9, 9, 9, 12 lags by horizon). Forecast origins 1910:06 to 2023:11 for h = 1. * p < 0.10, ** p < 0.05, *** p < 0.01 (two-sided). In-sample estimates over the whole period; Table 6 reports real-time forecasts.
+Notes: Dependent variable: 1 if month t+h lies in a dated bear market. Predictors are measured at t and standardized. Newey-West standard errors in parentheses (9, 9, 9, 12 lags by horizon). Forecast origins 1910:06 to 2023:11 for h = 1. * p < 0.10, ** p < 0.05, *** p < 0.01 (two-sided). In-sample estimates over the whole period, not real-time forecasts.

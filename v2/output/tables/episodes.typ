@@ -2,9 +2,10 @@
   caption: [Dated bear markets in the real S&P 500, 1900-2023],
   kind: table,
   [
-    #set text(size: 8.5pt)
+    #set text(size: 8.5pt, hyphenate: false)
+    #set par(justify: false, first-line-indent: 0em)
     #table(
-      columns: (auto, 1fr, 1fr, 1fr, 1fr, 1fr),
+      columns: (1fr, 1fr, 1fr, 1fr, 1fr, 1fr),
       align: (left, center, center, center, center, center),
       stroke: none,
       inset: (x: 3pt, y: 2.4pt),

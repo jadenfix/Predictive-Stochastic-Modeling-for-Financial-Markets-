@@ -2,9 +2,10 @@
   caption: [Forecasting the regime probability: unrestricted versus intercept-only models],
   kind: table,
   [
-    #set text(size: 8.5pt)
+    #set text(size: 8pt, hyphenate: false)
+    #set par(justify: false, first-line-indent: 0em)
     #table(
-      columns: (1.45fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr),
+      columns: (2.3fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr),
       align: (left, center, center, center, center, center, center, center, center),
       stroke: none,
       inset: (x: 3pt, y: 2.4pt),
@@ -35,12 +36,12 @@
       [TR-CAPE], [0.720], [0.994], [0.998], [0.990], [0.664], [0.996], [1.000], [0.994],
       table.cell(colspan: 9, inset: (y: 1.5pt))[],
       table.cell(colspan: 9, align: left)[_C. Corrected design: past-only predictors, true h-month lead, expanding window_],
-      [Inflation (CPI, monthly)], [1.003], [0.951#super[\*\*]], [0.918#super[\*\*]], [0.939#super[\*\*\*]], [0.976#super[\*]], [0.930#super[\*\*\*]], [0.920#super[\*\*\*]], [0.935#super[\*\*\*]],
-      [Change in 10-year Treasury yield], [1.002], [1.000], [0.985], [1.005], [1.004], [0.998], [0.990], [1.003],
-      [Real 10-year bond return], [1.007], [1.003], [0.987], [1.012], [1.008], [0.997], [0.999], [1.010],
+      [CPI inflation, monthly], [1.003], [0.951#super[\*\*]], [0.918#super[\*\*]], [0.939#super[\*\*\*]], [0.976#super[\*]], [0.930#super[\*\*\*]], [0.920#super[\*\*\*]], [0.935#super[\*\*\*]],
+      [Change in 10-year yield], [1.002], [1.000], [0.985], [1.005], [1.004], [0.998], [0.990], [1.003],
+      [Real bond return], [1.007], [1.003], [0.987], [1.012], [1.008], [0.997], [0.999], [1.010],
       [Real dividend growth], [0.953#super[\*\*\*]], [0.965#super[\*\*]], [0.935#super[\*\*\*]], [0.941#super[\*\*]], [0.934#super[\*\*\*]], [0.943#super[\*\*\*]], [0.930#super[\*\*\*]], [0.935#super[\*\*\*]],
-      [Real S&P 500 total return], [0.868#super[\*\*\*]], [0.931#super[\*\*\*]], [0.985#super[\*]], [1.005], [0.844#super[\*\*\*]], [0.936#super[\*\*\*]], [0.974#super[\*\*]], [1.000],
-      [Real TR-scaled earnings growth], [0.999], [1.007], [1.029], [1.056], [0.997], [1.004], [1.013], [1.025],
+      [Real total return], [0.868#super[\*\*\*]], [0.931#super[\*\*\*]], [0.985#super[\*]], [1.005], [0.844#super[\*\*\*]], [0.936#super[\*\*\*]], [0.974#super[\*\*]], [1.000],
+      [TR-scaled earnings growth], [0.999], [1.007], [1.029], [1.056], [0.997], [1.004], [1.013], [1.025],
       [Change in log TR-CAPE], [0.865#super[\*\*]], [0.928#super[\*\*\*]], [0.983#super[\*\*]], [1.009], [0.851#super[\*\*\*]], [0.939#super[\*\*\*]], [0.978#super[\*\*]], [1.003],
       [Benchmark: regime probability at t], [0.476#super[\*\*\*]], [0.872#super[\*\*\*]], [1.032], [1.025], [0.483#super[\*\*\*]], [0.853#super[\*\*\*]], [0.985], [1.004],
       table.hline(stroke: 0.9pt),
