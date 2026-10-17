@@ -6,10 +6,10 @@ resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'emscripten'",
     "python_full_version >= '3.14' and sys_platform != 'emscripten' and sys_platform != 'win32'",
     "python_full_version == '3.13.*' and sys_platform == 'win32'",
-    "python_full_version < '3.13' and sys_platform == 'win32'",
     "python_full_version == '3.13.*' and sys_platform == 'emscripten'",
-    "python_full_version < '3.13' and sys_platform == 'emscripten'",
     "python_full_version == '3.13.*' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version < '3.13' and sys_platform == 'win32'",
+    "python_full_version < '3.13' and sys_platform == 'emscripten'",
     "python_full_version < '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32'",
 ]
 
@@ -636,6 +636,7 @@ dependencies = [
     { name = "pandas" },
     { name = "scipy" },
     { name = "statsmodels" },
+    { name = "typst" },
 ]
 
 [package.dev-dependencies]
@@ -643,7 +644,6 @@ dev = [
     { name = "pypdf" },
     { name = "pypdfium2" },
     { name = "pytest" },
-    { name = "typst" },
 ]
 
 [package.metadata]
@@ -653,6 +653,7 @@ requires-dist = [
     { name = "pandas", specifier = ">=2.2" },
     { name = "scipy", specifier = ">=1.13" },
     { name = "statsmodels", specifier = ">=0.14.4" },
+    { name = "typst", specifier = ">=0.13" },
 ]
 
 [package.metadata.requires-dev]
@@ -660,7 +661,6 @@ dev = [
     { name = "pypdf", specifier = ">=5.0" },
     { name = "pypdfium2", specifier = ">=4.30" },
     { name = "pytest", specifier = ">=8.0" },
-    { name = "typst", specifier = ">=0.13" },
 ]
 
 [[package]]

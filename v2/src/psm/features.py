@@ -31,12 +31,12 @@ class Feature:
 
 # Monthly-change predictors mirroring the seven series of the archived thesis.
 ORIGINAL_FEATURES: tuple[Feature, ...] = (
-    Feature("infl_m", "Inflation (CPI, monthly)", "% per month"),
-    Feature("d_rate", "Change in 10-year Treasury yield", "pp"),
-    Feature("bond_ret", "Real 10-year bond return", "% per month"),
+    Feature("infl_m", "CPI inflation, monthly", "% per month"),
+    Feature("d_rate", "Change in 10-year yield", "pp"),
+    Feature("bond_ret", "Real bond return", "% per month"),
     Feature("div_growth", "Real dividend growth", "% per month"),
-    Feature("tr_ret", "Real S&P 500 total return", "% per month"),
-    Feature("trse_growth", "Real TR-scaled earnings growth", "% per month"),
+    Feature("tr_ret", "Real total return", "% per month"),
+    Feature("trse_growth", "TR-scaled earnings growth", "% per month"),
     Feature("d_trcape", "Change in log TR-CAPE", "% per month"),
 )
 
@@ -44,7 +44,7 @@ ORIGINAL_FEATURES: tuple[Feature, ...] = (
 FORECAST_FEATURES: tuple[Feature, ...] = (
     Feature("log_dy", "Log dividend yield", "log points"),
     Feature("log_cape", "Log CAPE", "log points"),
-    Feature("infl_yoy", "Inflation (CPI, 12-month)", "%"),
+    Feature("infl_yoy", "CPI inflation, 12-month", "%"),
     Feature("d_rate_12", "12-month change in 10-year yield", "pp"),
     Feature("mom_12", "12-month real price change", "%"),
     Feature("vol_12", "12-month realized volatility", "% annualized"),

@@ -1,4 +1,4 @@
-"""Reproduce every table, figure and reported number: ``python -m psm.run``."""
+"""Reproduce every table, figure, reported number and the paper PDF: ``python -m psm.run``."""
 
 from __future__ import annotations
 
@@ -11,9 +11,13 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from psm import figures, report
+from psm import figures, paper, report
 from psm.config import (
     ARCHIVED_REPORTED_FILE,
+    BEAR_DECLINE,
+    BULL_RISE,
+    CPI_LAG,
+    FUNDAMENTALS_LAG,
     FULL_SAMPLE,
     HORIZONS,
     OOS_FIRST_ORIGIN,
@@ -31,9 +35,9 @@ from psm.features import (
     real_returns,
     standardize,
 )
-from psm.forecast import BEAR_MODELS, bear_forecasts, fit_vintage_regimes, regime_prob_forecasts
+from psm.forecast import BASELINES, BEAR_MODELS, bear_forecasts, fit_vintage_regimes, regime_prob_forecasts
 from psm.labels import episodes, label_series
-from psm.metrics import auc, brier, clark_west, diebold_mariano, log_loss
+from psm.metrics import LOG_LOSS_FLOOR, auc, brier, clark_west, diebold_mariano, log_loss
 from psm.regimes import fit_regimes
 from psm.regressions import fit_beta, fit_binary, fit_ols
 from psm.replication import (
@@ -43,15 +47,18 @@ from psm.replication import (
     archived_mspe,
     fit_archived_regimes,
 )
-from psm.tables import fmt, write_table
+from psm.tables import fmt, fmt_p, write_table
 
 ORIGINAL_KEYS = [f.key for f in ORIGINAL_FEATURES]
 FORECAST_KEYS = [f.key for f in FORECAST_FEATURES]
 FIGURE_MODELS = ("logit_all", "logit_dy", "ms", "persist")
 
 
-def log(msg: str, _t0: list[float] = [time.time()]) -> None:  # noqa: B006
-    print(f"[{time.time() - _t0[0]:7.1f}s] {msg}", flush=True)
+_START = time.time()
+
+
+def log(msg: str) -> None:
+    print(f"[{time.time() - _START:7.1f}s] {msg}", flush=True)
 
 
 def _num(x: float, digits: int = 3) -> str:
@@ -114,7 +121,24 @@ def main(out: Path = OUTPUT_DIR, clean: bool = True) -> None:
     tables, figs, res = out / "tables", out / "figures", out / "results"
     for d in (tables, figs, res):
         d.mkdir(parents=True, exist_ok=True)
-    numbers: dict = {}
+    numbers: dict = {
+        "design": {
+            "decline": f"{100 * BEAR_DECLINE:.0f}",
+            "rise": f"{100 * BULL_RISE:.0f}",
+            "cpi_lag": str(CPI_LAG),
+            "fund_lag": str(FUNDAMENTALS_LAG),
+            "horizons": ", ".join(map(str, HORIZONS)),
+            "h_max": str(max(HORIZONS)),
+            "floor": f"{LOG_LOSS_FLOOR:g}",
+            "thesis_sample": f"{THESIS_SAMPLE.start:%B %Y} to {THESIS_SAMPLE.end:%B %Y}",
+            "thesis_start_year": f"{THESIS_SAMPLE.start:%Y}",
+            "end_year": f"{FULL_SAMPLE.end:%Y}",
+            "full_start_year": f"{FULL_SAMPLE.start:%Y}",
+            "n_forecast_features": str(len(FORECAST_FEATURES)),
+            "n_original_features": str(len(ORIGINAL_FEATURES)),
+            "n_models": str(len(BEAR_MODELS)),
+        }
+    }
 
     # ------------------------------------------------------------------ data
     raw_data = load_raw()
@@ -361,6 +385,7 @@ def main(out: Path = OUTPUT_DIR, clean: bool = True) -> None:
     met.to_csv(res / "bear_oos_metrics.csv")
     period = f"{fc.target_date.min():%Y:%m}-{fc.target_date.max():%Y:%m}"
     write_table(report.oos_table(met, HORIZONS, "targets " + period), tables)
+    write_table(report.summary_table(met, HORIZONS), tables)
     numbers["oos"] = {"period": period, "first_origin": f"{origins[0]:%B %Y}", "n_refits": str(len(vint.fits))}
     for h in HORIZONS:
         block = {}
@@ -371,8 +396,8 @@ def main(out: Path = OUTPUT_DIR, clean: bool = True) -> None:
                 "bss": _num(100 * r.bss, 1),
                 "ll": _num(r.log_loss, 3),
                 "auc": _num(r.auc, 3),
-                "p_unc": _num(r.p_uncond, 3),
-                "p_per": _num(r.p_persist, 3),
+                "p_unc": fmt_p(r.p_uncond),
+                "p_per": fmt_p(r.p_persist),
             }
         sub = met.loc[h]
         best = sub.brier.idxmin()
@@ -387,6 +412,11 @@ def main(out: Path = OUTPUT_DIR, clean: bool = True) -> None:
         and met.loc[(h, "logit_state"), "p_persist"] < 0.05
     ]
     numbers["oos"]["state_beats_persist_5pct"] = ", ".join(str(h) for h in beats_persist) or "none"
+    challengers = met[~met.index.get_level_values("model").isin(BASELINES)]
+    numbers["oos"]["n_challengers"] = str(len(challengers))
+    numbers["oos"]["n_beat_persist_5pct"] = str(int((challengers.p_persist < 0.05).sum()))
+    numbers["oos"]["min_p_persist"] = fmt_p(challengers.p_persist.min())
+    numbers["oos"]["n_beat_uncond_5pct"] = str(int((challengers.p_uncond < 0.05).sum()))
     figures.oos_paths(fc, labels.bear, (1, 6, 12), FIGURE_MODELS, figs)
     figures.calibration_curves(fc, HORIZONS, FIGURE_MODELS, figs)
     figures.roc_curves(fc, HORIZONS, FIGURE_MODELS, met, figs)
@@ -400,6 +430,8 @@ def main(out: Path = OUTPUT_DIR, clean: bool = True) -> None:
     numbers["hero"] = {"h": str(hero_h), "model": BEAR_MODELS[hero_model]}
 
     (out / "numbers.json").write_text(json.dumps(numbers, indent=2, ensure_ascii=False) + "\n")
+    if out == OUTPUT_DIR:
+        log(f"paper compiled to {paper.build()}")
     log(f"done: outputs in {out}")
 
 

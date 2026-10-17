@@ -64,6 +64,7 @@ plt.rcParams.update(
         "lines.linewidth": 1.4,
         "savefig.dpi": 300,
         "svg.fonttype": "none",
+        "svg.hashsalt": "psm-v2",
         "figure.dpi": 100,
     }
 )

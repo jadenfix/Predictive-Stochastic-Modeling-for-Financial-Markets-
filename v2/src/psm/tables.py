@@ -29,6 +29,13 @@ def fmt(x: float | None, digits: int = 3) -> str:
     return s
 
 
+def fmt_p(p: float) -> str:
+    """p-values to three decimals, with values below 0.001 shown as '<0.001'."""
+    if not np.isfinite(p):
+        return ""
+    return "<0.001" if p < 0.001 else fmt(p, 3)
+
+
 def fmt_int(n: int) -> str:
     return f"{n:,}"
 
@@ -61,7 +68,10 @@ class Table:
     notes: list[str]
     groups: list[tuple[str, int]] | None = None
     stub: str = ""
-    stub_width: str = "auto"
+    stub_width: str = "2fr"
+    widths: list[str] | None = None  # data-column widths; default 1fr each
+    aligns: list[str] | None = None  # data-column alignment; default center
+    size: str = "8.5pt"
 
 
 def coef_rows(label: str, coefs: list[Coef | None], digits: int = 3, with_stars: bool = True) -> list[Row]:
@@ -111,10 +121,11 @@ def to_typst(table: Table) -> str:
         f"  caption: [{_typst_escape(table.title)}],",
         "  kind: table,",
         "  [",
-        "    #set text(size: 8.5pt)",
+        f"    #set text(size: {table.size}, hyphenate: false)",
+        "    #set par(justify: false, first-line-indent: 0em)",
         "    #table(",
-        f"      columns: ({table.stub_width}, " + ", ".join(["1fr"] * ncol) + "),",
-        "      align: (left, " + ", ".join(["center"] * ncol) + "),",
+        f"      columns: ({table.stub_width}, " + ", ".join(table.widths or ["1fr"] * ncol) + "),",
+        "      align: (left, " + ", ".join(table.aligns or ["center"] * ncol) + "),",
         "      stroke: none,",
         "      inset: (x: 3pt, y: 2.4pt),",
         "      table.hline(stroke: 0.9pt),",
@@ -137,7 +148,7 @@ def to_typst(table: Table) -> str:
     for s_i, section in enumerate(table.sections):
         if section.title:
             if s_i > 0:
-                lines.append("      table.cell(colspan: %d, inset: (y: 1.5pt))[]," % (ncol + 1))
+                lines.append(f"      table.cell(colspan: {ncol + 1}, inset: (y: 1.5pt))[],")
             lines.append(
                 f"      table.cell(colspan: {ncol + 1}, align: left)[_{_typst_escape(section.title)}_],"
             )

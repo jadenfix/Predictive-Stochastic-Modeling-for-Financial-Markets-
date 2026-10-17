@@ -10,7 +10,7 @@ from psm.forecast import BEAR_MODELS
 from psm.regimes import RegimeFit
 from psm.regressions import Coef, FitSummary
 from psm.replication import ARCHIVED_PREDICTORS
-from psm.tables import STAR_NOTE, Row, Section, Table, coef_rows, fmt, fmt_int, stars
+from psm.tables import STAR_NOTE, Row, Section, Table, coef_rows, fmt, fmt_int, fmt_p, stars
 
 TRANSFORMS = {
     "infl_m": ("100 dlog CPI", "1"),
@@ -34,7 +34,6 @@ def _h(h: int) -> str:
 
 
 def variables_table(features: pd.DataFrame, sample_label: str) -> Table:
-    rows = []
     sections = []
     for title, group in (("Monthly-change predictors (archived thesis variables)", ORIGINAL_FEATURES),
                          ("State predictors (bear-market forecasting models)", FORECAST_FEATURES)):
@@ -56,7 +55,9 @@ def variables_table(features: pd.DataFrame, sample_label: str) -> Table:
             "columns (future prices) are never used."
         ],
         stub="Predictor",
-        stub_width="1.25fr",
+        stub_width="1.9fr",
+        widths=["2.1fr", "1fr", "1fr", "0.6fr", "0.6fr"],
+        aligns=["left", "left", "center", "right", "right"],
     )
 
 
@@ -80,6 +81,7 @@ def episodes_table(ep: pd.DataFrame) -> Table:
             "the 20% decline had occurred, that is, when the bear market became knowable in real time."
         ],
         stub="Peak",
+        stub_width="1fr",
     )
 
 
@@ -122,7 +124,7 @@ def regime_table(fits: dict[str, RegimeFit]) -> Table:
             "coefficient is common to both regimes. Returns are 100 times the log change in the real price "
             "index. " + STAR_NOTE + " Stars are shown only for tests against zero that are meaningful (means, AR term)."
         ],
-        stub_width="1.5fr",
+        stub_width="2.2fr",
     )
 
 
@@ -157,7 +159,8 @@ def original_spec_table(ols: dict[tuple[str, int], FitSummary], beta: dict[tuple
             "predictor with logit(Q). " + STAR_NOTE + " Q is computed with full-sample parameters, so these "
             "are in-sample associations, not forecasts."
         ],
-        stub_width="1.45fr",
+        stub_width="2.1fr",
+        size="8pt",
     )
 
 
@@ -191,12 +194,13 @@ def logit_table(logit: dict[int, FitSummary], probit: dict[int, FitSummary], hor
         groups=[("Logit", len(horizons)), ("Probit", len(horizons))],
         sections=sections,
         notes=[
-            "Dependent variable: 1 if month t+h lies in a dated bear market (Table 2). Predictors are "
+            "Dependent variable: 1 if month t+h lies in a dated bear market. Predictors are "
             f"measured at t and standardized. Newey-West standard errors in parentheses ({lags} lags by horizon). "
             f"Forecast origins {first.start:%Y:%m} to {first.end:%Y:%m} for h = {horizons[0]}. "
-            + STAR_NOTE + " In-sample estimates over the whole period; Table 6 reports real-time forecasts."
+            + STAR_NOTE + " In-sample estimates over the whole period, not real-time forecasts."
         ],
-        stub_width="1.5fr",
+        stub_width="2.3fr",
+        size="8pt",
     )
 
 
@@ -208,8 +212,8 @@ def oos_table(metrics: pd.DataFrame, horizons: tuple[int, ...], period: str) -> 
             r = metrics.loc[(h, m)]
             rows.append(Row(name, [
                 fmt(r.brier, 3), fmt(100 * r.bss, 1), fmt(r.log_loss, 3), fmt(r.auc, 3),
-                "" if m == "uncond" else fmt(r.p_uncond, 3),
-                "" if m in ("uncond", "persist") else fmt(r.p_persist, 3),
+                "" if m == "uncond" else fmt_p(r.p_uncond),
+                "" if m in ("uncond", "persist") else fmt_p(r.p_persist),
             ]))
         n = int(metrics.loc[(h, "uncond"), "n"])
         share = metrics.loc[(h, "uncond"), "bear_share"]
@@ -228,7 +232,7 @@ def oos_table(metrics: pd.DataFrame, horizons: tuple[int, ...], period: str) -> 
             "are one-sided Diebold-Mariano tests (Harvey-Leybourne-Newbold correction, Bartlett HAC variance) "
             "of equal Brier score against the alternative that the model is more accurate than the baseline."
         ],
-        stub_width="1.9fr",
+        stub_width="2.6fr",
     )
 
 
@@ -271,7 +275,8 @@ def mspe_table(archived: pd.DataFrame, corrected: pd.DataFrame, horizons: tuple[
             f"{corrected_period}. The benchmark row uses Q(t) itself as the predictor. Stars in Panel C mark Clark-West (2007) tests of equal accuracy in nested "
             "models where the unrestricted model is better: * p < 0.10, ** p < 0.05, *** p < 0.01."
         ],
-        stub_width="1.45fr",
+        stub_width="2.3fr",
+        size="8pt",
     )
 
 
@@ -290,9 +295,36 @@ def replication_table(rep: pd.DataFrame) -> Table:
             "forecasts. Coefficients in the corrected column are per one-standard-deviation change of a "
             "different (growth-rate) transformation and are therefore comparable in sign and significance only."
         ],
-        stub_width="2fr",
+        stub_width="2.6fr",
     )
 
 
 def coef_cell(c: Coef, digits: int = 3) -> str:
     return f"{fmt(c.estimate, digits)}{stars(c.pvalue)} ({fmt(c.se, digits)})"
+
+
+SUMMARY_MODELS = ("uncond", "persist", "ms", "logit_dy", "logit_all")
+
+
+def summary_table(metrics: pd.DataFrame, horizons: tuple[int, ...]) -> Table:
+    """Compact Brier-score summary for the README."""
+    rows = []
+    for h in horizons:
+        cells = []
+        for m in SUMMARY_MODELS:
+            r = metrics.loc[(h, m)]
+            cells.append(fmt(r.brier, 3) if m == "uncond" else f"{fmt(r.brier, 3)} ({fmt(100 * r.bss, 1)}%)")
+        best_p = min(metrics.loc[(h, m), "p_persist"] for m in BEAR_MODELS if m not in ("uncond", "persist"))
+        cells.append(fmt_p(best_p))
+        rows.append(Row(f"{h} month{'s' if h > 1 else ''}", cells))
+    return Table(
+        key="summary",
+        title="Out-of-sample Brier scores (skill relative to the unconditional frequency)",
+        columns=[BEAR_MODELS[m] for m in SUMMARY_MODELS] + ["Best p vs persistence"],
+        sections=[Section(None, rows)],
+        notes=[
+            "Lower is better. Real-time expanding-window forecasts, targets 1960-2023. The last column is "
+            "the smallest one-sided Diebold-Mariano p-value of any model against persistence."
+        ],
+        stub="Horizon",
+    )
