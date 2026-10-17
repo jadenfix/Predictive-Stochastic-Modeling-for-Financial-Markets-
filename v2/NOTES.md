@@ -88,8 +88,9 @@ long-term rates "robustly forecast" bear-market probabilities, and the unrestric
 9. **Smaller issues.** The paper says the beta regression forces figures with `[H]` (a LaTeX
    note left in the text); the "back-casting" mean (`meanMSPEbc`) re-uses the forecasting ratios;
    the `ts()` objects label the 768 rows 1960:01-2023:12 while the R rows start a month earlier;
-   the reference "Chen, N.-K. (2008)" for the *Journal of Banking & Finance* 33(2) article is, to
-   my knowledge, Chen, S.-S. (2009) and is cited that way in v2.
+   the reference "Chen, N.-K. (2008)" for the *Journal of Banking & Finance* 33(2) article is
+   Chen, S.-S. (Shiu-Sheng Chen) (2009), doi:10.1016/j.jbankfin.2008.07.013 (online 2008, issue
+   February 2009), and is cited that way in v2; "Hammerschmidt" is spelled Hammerschmid.
 
 ## 3. What v2 changes and why
 

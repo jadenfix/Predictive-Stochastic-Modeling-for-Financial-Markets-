@@ -183,7 +183,7 @@ def _shared_legend(fig: plt.Figure, ax: plt.Axes) -> None:
 
 
 def calibration_curves(forecasts: pd.DataFrame, horizons: tuple[int, ...], models: tuple[str, ...], directory: Path) -> None:
-    """Reliability diagrams on forecast deciles: observed bear frequency against mean forecast."""
+    """Reliability diagrams on six forecast-quantile bins: observed bear frequency against mean forecast."""
     fig, axes = _panel_grid()
     for ax, h in zip(axes, horizons):
         ax.grid(True, axis="both")

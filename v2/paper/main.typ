@@ -117,7 +117,7 @@ variables help predict bear markets.
 On the predictor side, Campbell and Shiller (1988) and Fama and French (1988) document that
 dividend yields forecast long-horizon returns, while Goetzmann and Jorion (1993), Stambaugh (1999)
 and Lewellen (1999) show that inference with persistent, price-scaled predictors is delicate.
-Pontiff and Schall (1998) report related evidence for book-to-market ratios, and Hammerschmidt
+Pontiff and Schall (1998) report related evidence for book-to-market ratios, and Hammerschmid
 and Lohre (2018) find that return predictability itself varies across regimes. Welch and Goyal
 (2008) emphasize that many predictors that look strong in sample fail out of sample, which is
 the standard this edition adopts.
@@ -127,7 +127,7 @@ the standard this edition adopts.
 == Source and timing
 
 The data are the monthly U.S. stock market series compiled by Robert Shiller (Shiller, 2015),
-archived in the repository as `one45.csv`. The file covers #n.data.first to #n.data.last_raw; I use
+archived in the repository as `one45.csv`. The file covers #n.data.first to #n.data.last_raw\; I use
 observations through #n.data.end, the last month with complete dividend and earnings data. One
 trailing row of the file is a text footnote and is dropped. The S&P Composite price is a monthly
 average of daily closes, so it is known at the end of each month. I treat the end of month $t$
@@ -298,7 +298,7 @@ interpretable. The number of predictors significant at the 5% level in the OLS r
 #n.orig.sig5_h1 of #n.orig.n_pred at one month, #n.orig.sig5_h3 at three, #n.orig.sig5_h6 at six
 and #n.orig.sig5_h12 at twelve. The largest $R^2$ (#n.orig.max_r2) belongs to the
 predictor "#n.orig.max_r2_label" at one month: a one-standard-deviation higher real return lowers next
-month's bear probability by #n.orig.tr_h1 percentage points. This is close to mechanical,
+month's bear probability (coefficient #n.orig.tr_h1 percentage points). This is close to mechanical,
 because the filter itself updates on recent returns. Dividend growth (#n.orig.div_h1 at one
 month) and inflation have the expected signs. Total-return-scaled earnings, which the award
 version singled out, show no meaningful relationship once the timing is corrected
@@ -395,7 +395,7 @@ refits from #n.mspe.test_start. Here #n.mspe.n_below1_ols of #n.mspe.n_cells OLS
 one and #n.mspe.n_cw10_ols are significant at the 10% level by the Clark-West test. The gains are
 real but small: the best ratio is #n.mspe.min_ratio_ols, for the predictor "#n.mspe.min_ratio_label" at
 #n.mspe.min_ratio_h month. For comparison, the regime probability's own current value achieves a
-ratio of #n.mspe.qnow_h1 at one month, but none at six months (#n.mspe.qnow_h6), where inflation
+ratio of #n.mspe.qnow_h1 at one month, but no gain at six months (#n.mspe.qnow_h6), where inflation
 and dividend growth still carry a few percent of information. The intercept-only model is a
 weak benchmark for a target as persistent as $Q_t$, and this panel uses full-sample regime
 parameters to construct the target, so it describes associations with the regime probability
@@ -426,7 +426,7 @@ small average bias can have a ratio near zero even when one has much larger squa
 Re-running the archived code path in Python, with all three errors, reproduces the award
 results (@fig:replication, @tab:replication). The replicated transition probabilities are
 #n.rep.p_bull_replicated and #n.rep.p_bear_replicated against the reported #n.rep.p_bull_reported
-and #n.rep.p_bear_reported; the correlation between replicated and reported values is
+and #n.rep.p_bear_reported\; the correlation between replicated and reported values is
 #n.rep.corr_coef for the OLS coefficients, #n.rep.corr_r2 for the $R^2$ statistics and
 #n.rep.corr_ratio for the forecast ratios. The match confirms the diagnosis: the reported dividend
 coefficient at $k = 1$ is #n.rep.div_k1_reported and the replication with the backward target
@@ -520,7 +520,7 @@ of Finance_, 48(2), 663-679.
 Hamilton, J. D. (1989). A new approach to the economic analysis of nonstationary time series and
 the business cycle. _Econometrica_, 57(2), 357-384.
 
-Hammerschmidt, R. and Lohre, H. (2018). Regime shifts and stock return predictability.
+Hammerschmid, R. and Lohre, H. (2018). Regime shifts and stock return predictability.
 _International Review of Economics & Finance_, 56, 138-160.
 
 Harvey, D., Leybourne, S. and Newbold, P. (1997). Testing the equality of prediction mean
@@ -545,7 +545,7 @@ Pontiff, J. and Schall, L. D. (1998). Book-to-market ratios as predictors of mar
 _Journal of Financial Economics_, 49(2), 141-160.
 
 Shiller, R. J. (2015). _Irrational Exuberance_ (3rd ed.). Princeton University Press. Data:
-U.S. Stock Markets and CAPE Ratio, Yale Department of Economics.
+U.S. Stock Markets 1871-Present and CAPE Ratio, #link("https://shillerdata.com")[shillerdata.com].
 
 Smithson, M. and Verkuilen, J. (2006). A better lemon squeezer? Maximum-likelihood regression
 with beta-distributed dependent variables. _Psychological Methods_, 11(1), 54-71.
