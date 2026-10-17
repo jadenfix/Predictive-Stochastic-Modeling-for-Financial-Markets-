@@ -1,0 +1,47 @@
+#figure(
+  caption: [Full-sample logit and probit models of a dated bear market h months ahead],
+  kind: table,
+  [
+    #set text(size: 8.5pt)
+    #table(
+      columns: (1.5fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr),
+      align: (left, center, center, center, center, center, center, center, center),
+      stroke: none,
+      inset: (x: 3pt, y: 2.4pt),
+      table.hline(stroke: 0.9pt),
+      table.header(
+        [], table.cell(colspan: 4)[Logit], table.cell(colspan: 4)[Probit],
+        table.hline(start: 1, end: 5, stroke: 0.4pt),
+        table.hline(start: 5, end: 9, stroke: 0.4pt),
+        [], [h = 1], [h = 3], [h = 6], [h = 12], [h = 1], [h = 3], [h = 6], [h = 12],
+      ),
+      table.hline(stroke: 0.5pt),
+      table.cell(colspan: 9, align: left)[_Valuation_],
+      [Log dividend yield], [0.86#super[\*]], [0.92#super[\*\*]], [0.97#super[\*\*]], [1.05#super[\*\*]], [0.49#super[\*]], [0.53#super[\*\*]], [0.57#super[\*\*]], [0.62#super[\*\*]],
+      [], [(0.46)], [(0.45)], [(0.44)], [(0.46)], [(0.25)], [(0.25)], [(0.25)], [(0.26)],
+      [Log CAPE], [0.57], [0.71#super[\*]], [0.81#super[\*\*]], [0.92#super[\*\*]], [0.32], [0.40#super[\*]], [0.48#super[\*\*]], [0.55#super[\*\*]],
+      [], [(0.42)], [(0.42)], [(0.41)], [(0.43)], [(0.23)], [(0.24)], [(0.24)], [(0.25)],
+      table.cell(colspan: 9, inset: (y: 1.5pt))[],
+      table.cell(colspan: 9, align: left)[_Macroeconomic_],
+      [Inflation (CPI, 12-month)], [0.82#super[\*\*\*]], [0.77#super[\*\*\*]], [0.67#super[\*\*\*]], [0.52#super[\*\*]], [0.46#super[\*\*\*]], [0.43#super[\*\*\*]], [0.39#super[\*\*\*]], [0.31#super[\*\*]],
+      [], [(0.26)], [(0.25)], [(0.23)], [(0.22)], [(0.14)], [(0.14)], [(0.13)], [(0.13)],
+      [12-month change in 10-year yield], [0.22], [0.21], [0.23], [0.27#super[\*]], [0.14#super[\*]], [0.14], [0.14], [0.15#super[\*]],
+      [], [(0.15)], [(0.15)], [(0.15)], [(0.15)], [(0.09)], [(0.09)], [(0.09)], [(0.09)],
+      table.cell(colspan: 9, inset: (y: 1.5pt))[],
+      table.cell(colspan: 9, align: left)[_Market_],
+      [12-month real price change], [−0.78#super[\*\*\*]], [−0.41#super[\*\*]], [−0.16], [0.19], [−0.43#super[\*\*\*]], [−0.24#super[\*\*]], [−0.10], [0.10],
+      [], [(0.25)], [(0.20)], [(0.18)], [(0.18)], [(0.12)], [(0.11)], [(0.10)], [(0.11)],
+      [12-month realized volatility], [0.41#super[\*]], [0.47#super[\*\*]], [0.51#super[\*\*\*]], [0.61#super[\*\*\*]], [0.25#super[\*\*]], [0.28#super[\*\*\*]], [0.30#super[\*\*\*]], [0.37#super[\*\*\*]],
+      [], [(0.23)], [(0.19)], [(0.18)], [(0.18)], [(0.11)], [(0.10)], [(0.10)], [(0.10)],
+      table.hline(stroke: 0.3pt),
+      [Constant], [−0.95#super[\*\*\*]], [−0.89#super[\*\*\*]], [−0.85#super[\*\*\*]], [−0.82#super[\*\*\*]], [−0.58#super[\*\*\*]], [−0.54#super[\*\*\*]], [−0.52#super[\*\*\*]], [−0.49#super[\*\*\*]],
+      [], [(0.18)], [(0.17)], [(0.18)], [(0.19)], [(0.10)], [(0.10)], [(0.10)], [(0.11)],
+      [Pseudo-R² (McFadden)], [0.261], [0.186], [0.137], [0.105], [0.260], [0.186], [0.137], [0.104],
+      [Log-likelihood], [−633.3], [−697.1], [−737.6], [−763.0], [−634.2], [−696.9], [−737.4], [−763.6],
+      [AIC], [1,280.7], [1,408.3], [1,489.1], [1,540.1], [1,282.4], [1,407.9], [1,488.8], [1,541.2],
+      [Observations], [1,362], [1,360], [1,357], [1,351], [1,362], [1,360], [1,357], [1,351],
+      table.hline(stroke: 0.9pt),
+    )
+    #block(width: 100%, above: 0.5em)[#set text(size: 7.5pt); #set par(justify: true); #align(left)[_Notes:_ Dependent variable: 1 if month t+h lies in a dated bear market (Table 2). Predictors are measured at t and standardized. Newey-West standard errors in parentheses (9, 9, 9, 12 lags by horizon). Forecast origins 1910:06 to 2023:11 for h = 1. \* p \< 0.10, \*\* p \< 0.05, \*\*\* p \< 0.01 (two-sided). In-sample estimates over the whole period; Table 6 reports real-time forecasts.]]
+  ],
+) <tab:logit>

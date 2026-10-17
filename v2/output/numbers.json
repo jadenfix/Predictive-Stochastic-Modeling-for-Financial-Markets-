@@ -1,0 +1,375 @@
+{
+  "data": {
+    "first": "January 1900",
+    "last_raw": "March 2024",
+    "end": "December 2023",
+    "months": "1487",
+    "dropped_rows": "1",
+    "audit_future": "1,490",
+    "audit_pairs": "1,490",
+    "audit_past": "3",
+    "n_bears": "21",
+    "n_bears_thesis": "9",
+    "bear_share_full": "32.4",
+    "bear_share_thesis": "22.7",
+    "median_bear_months": "20",
+    "median_decline": "34.8",
+    "median_confirm_lag": "9"
+  },
+  "ms": {
+    "bull_mean": "0.84",
+    "bear_mean": "−1.81",
+    "bull_sd": "2.45",
+    "bear_sd": "5.62",
+    "p_bull": "0.944",
+    "p_bear": "0.808",
+    "dur_bull": "17.9",
+    "dur_bear": "5.2",
+    "ar": "0.194",
+    "aic_ar": "3,994.5",
+    "aic_mv": "4,026.1",
+    "mv_p_bull": "0.949",
+    "mv_p_bear": "0.826",
+    "filtered_mean": "21.7",
+    "corr_filtered_bear": "0.42",
+    "corr_smoothed_bear": "0.56",
+    "auc_filtered_now": "0.799",
+    "auc_smoothed_now": "0.859",
+    "full_dur_bull": "30.4",
+    "full_dur_bear": "6.9"
+  },
+  "orig": {
+    "sig5_h1": "4",
+    "sig5_h3": "3",
+    "sig5_h6": "6",
+    "sig5_h12": "2",
+    "n_pred": "7",
+    "max_r2": "0.121",
+    "max_r2_label": "Real S&P 500 total return",
+    "div_h1": "−3.80*** (1.33)",
+    "tr_h1": "−9.20*** (1.12)",
+    "tr_h1_r2": "0.121",
+    "trse_h1": "−0.86 (2.50)",
+    "trse_h1_r2": "0.001"
+  },
+  "mspe": {
+    "test_start": "April 2011",
+    "n_below1_ols": "16",
+    "n_cells": "28",
+    "n_cw10_ols": "13",
+    "min_ratio_ols": "0.865",
+    "min_ratio_label": "Change in log TR-CAPE",
+    "min_ratio_h": "1",
+    "arch_b_below1": "11",
+    "arch_a_below1": "22",
+    "arch_cells": "28",
+    "qnow_h1": "0.476",
+    "qnow_h3": "0.872",
+    "qnow_h6": "1.032",
+    "qnow_h12": "1.025"
+  },
+  "rep": {
+    "p_bull_reported": "0.945",
+    "p_bear_reported": "0.833",
+    "p_bull_replicated": "0.950",
+    "p_bear_replicated": "0.833",
+    "corr_coef": "1.000",
+    "corr_r2": "1.000",
+    "corr_ratio": "0.998",
+    "div_ratio_reported": "0.004",
+    "div_ratio_replicated": "0.029",
+    "div_ratio_true": "1.154",
+    "div_ratio_corrected": "0.953",
+    "div_k1_reported": "−0.195",
+    "div_k1_replicated": "−0.198"
+  },
+  "logit": {
+    "start": "June 1910",
+    "r2_h1": "0.261",
+    "r2_h3": "0.186",
+    "r2_h6": "0.137",
+    "r2_h12": "0.105",
+    "log_dy_h1": "0.86* (0.46)",
+    "log_dy_h3": "0.92** (0.45)",
+    "log_dy_h6": "0.97** (0.44)",
+    "log_dy_h12": "1.05** (0.46)",
+    "log_cape_h1": "0.57 (0.42)",
+    "log_cape_h3": "0.71* (0.42)",
+    "log_cape_h6": "0.81** (0.41)",
+    "log_cape_h12": "0.92** (0.43)",
+    "infl_yoy_h1": "0.82*** (0.26)",
+    "infl_yoy_h3": "0.77*** (0.25)",
+    "infl_yoy_h6": "0.67*** (0.23)",
+    "infl_yoy_h12": "0.52** (0.22)",
+    "d_rate_12_h1": "0.22 (0.15)",
+    "d_rate_12_h3": "0.21 (0.15)",
+    "d_rate_12_h6": "0.23 (0.15)",
+    "d_rate_12_h12": "0.27* (0.15)",
+    "mom_12_h1": "−0.78*** (0.25)",
+    "mom_12_h3": "−0.41** (0.20)",
+    "mom_12_h6": "−0.16 (0.18)",
+    "mom_12_h12": "0.19 (0.18)",
+    "vol_12_h1": "0.41* (0.23)",
+    "vol_12_h3": "0.47** (0.19)",
+    "vol_12_h6": "0.51*** (0.18)",
+    "vol_12_h12": "0.61*** (0.18)"
+  },
+  "oos": {
+    "period": "1960:02-2023:12",
+    "first_origin": "January 1960",
+    "n_refits": "64",
+    "h1": {
+      "uncond": {
+        "brier": "0.198",
+        "bss": "0.0",
+        "ll": "0.587",
+        "auc": "0.563",
+        "p_unc": "",
+        "p_per": "1.000"
+      },
+      "persist": {
+        "brier": "0.161",
+        "bss": "18.9",
+        "ll": "0.502",
+        "auc": "0.688",
+        "p_unc": "0.000",
+        "p_per": ""
+      },
+      "ms": {
+        "brier": "0.176",
+        "bss": "10.9",
+        "ll": "0.537",
+        "auc": "0.702",
+        "p_unc": "0.000",
+        "p_per": "0.987"
+      },
+      "logit_dy": {
+        "brier": "0.165",
+        "bss": "16.5",
+        "ll": "0.527",
+        "auc": "0.627",
+        "p_unc": "0.000",
+        "p_per": "0.680"
+      },
+      "logit_all": {
+        "brier": "0.157",
+        "bss": "20.8",
+        "ll": "0.488",
+        "auc": "0.780",
+        "p_unc": "0.000",
+        "p_per": "0.316"
+      },
+      "probit_all": {
+        "brier": "0.155",
+        "bss": "21.5",
+        "ll": "0.487",
+        "auc": "0.779",
+        "p_unc": "0.000",
+        "p_per": "0.256"
+      },
+      "logit_state": {
+        "brier": "0.159",
+        "bss": "19.9",
+        "ll": "0.497",
+        "auc": "0.772",
+        "p_unc": "0.000",
+        "p_per": "0.387"
+      },
+      "best": "Probit: all predictors",
+      "best_key": "probit_all",
+      "n": "767",
+      "share": "22.7"
+    },
+    "h3": {
+      "uncond": {
+        "brier": "0.199",
+        "bss": "0.0",
+        "ll": "0.589",
+        "auc": "0.547",
+        "p_unc": "",
+        "p_per": "0.999"
+      },
+      "persist": {
+        "brier": "0.176",
+        "bss": "11.5",
+        "ll": "0.537",
+        "auc": "0.636",
+        "p_unc": "0.001",
+        "p_per": ""
+      },
+      "ms": {
+        "brier": "0.193",
+        "bss": "3.0",
+        "ll": "0.575",
+        "auc": "0.618",
+        "p_unc": "0.182",
+        "p_per": "0.994"
+      },
+      "logit_dy": {
+        "brier": "0.175",
+        "bss": "12.3",
+        "ll": "0.545",
+        "auc": "0.586",
+        "p_unc": "0.001",
+        "p_per": "0.433"
+      },
+      "logit_all": {
+        "brier": "0.187",
+        "bss": "6.2",
+        "ll": "0.563",
+        "auc": "0.675",
+        "p_unc": "0.134",
+        "p_per": "0.878"
+      },
+      "probit_all": {
+        "brier": "0.185",
+        "bss": "7.0",
+        "ll": "0.561",
+        "auc": "0.676",
+        "p_unc": "0.099",
+        "p_per": "0.838"
+      },
+      "logit_state": {
+        "brier": "0.189",
+        "bss": "5.1",
+        "ll": "0.573",
+        "auc": "0.667",
+        "p_unc": "0.197",
+        "p_per": "0.933"
+      },
+      "best": "Logit: dividend yield",
+      "best_key": "logit_dy",
+      "n": "765",
+      "share": "22.7"
+    },
+    "h6": {
+      "uncond": {
+        "brier": "0.200",
+        "bss": "0.0",
+        "ll": "0.592",
+        "auc": "0.528",
+        "p_unc": "",
+        "p_per": "0.906"
+      },
+      "persist": {
+        "brier": "0.190",
+        "bss": "4.9",
+        "ll": "0.568",
+        "auc": "0.571",
+        "p_unc": "0.094",
+        "p_per": ""
+      },
+      "ms": {
+        "brier": "0.205",
+        "bss": "−2.5",
+        "ll": "0.602",
+        "auc": "0.530",
+        "p_unc": "0.737",
+        "p_per": "0.986"
+      },
+      "logit_dy": {
+        "brier": "0.185",
+        "bss": "7.9",
+        "ll": "0.567",
+        "auc": "0.541",
+        "p_unc": "0.051",
+        "p_per": "0.287"
+      },
+      "logit_all": {
+        "brier": "0.214",
+        "bss": "−6.9",
+        "ll": "0.623",
+        "auc": "0.549",
+        "p_unc": "0.843",
+        "p_per": "0.981"
+      },
+      "probit_all": {
+        "brier": "0.213",
+        "bss": "−6.3",
+        "ll": "0.621",
+        "auc": "0.548",
+        "p_unc": "0.826",
+        "p_per": "0.977"
+      },
+      "logit_state": {
+        "brier": "0.218",
+        "bss": "−8.6",
+        "ll": "0.634",
+        "auc": "0.537",
+        "p_unc": "0.879",
+        "p_per": "0.992"
+      },
+      "best": "Logit: dividend yield",
+      "best_key": "logit_dy",
+      "n": "762",
+      "share": "22.8"
+    },
+    "h12": {
+      "uncond": {
+        "brier": "0.202",
+        "bss": "0.0",
+        "ll": "0.595",
+        "auc": "0.513",
+        "p_unc": "",
+        "p_per": "0.669"
+      },
+      "persist": {
+        "brier": "0.201",
+        "bss": "0.8",
+        "ll": "0.591",
+        "auc": "0.513",
+        "p_unc": "0.331",
+        "p_per": ""
+      },
+      "ms": {
+        "brier": "0.209",
+        "bss": "−3.5",
+        "ll": "0.609",
+        "auc": "0.463",
+        "p_unc": "0.847",
+        "p_per": "0.959"
+      },
+      "logit_dy": {
+        "brier": "0.198",
+        "bss": "1.9",
+        "ll": "0.594",
+        "auc": "0.488",
+        "p_unc": "0.353",
+        "p_per": "0.405"
+      },
+      "logit_all": {
+        "brier": "0.224",
+        "bss": "−11.1",
+        "ll": "0.654",
+        "auc": "0.417",
+        "p_unc": "0.911",
+        "p_per": "0.939"
+      },
+      "probit_all": {
+        "brier": "0.226",
+        "bss": "−11.8",
+        "ll": "0.659",
+        "auc": "0.411",
+        "p_unc": "0.924",
+        "p_per": "0.949"
+      },
+      "logit_state": {
+        "brier": "0.227",
+        "bss": "−12.3",
+        "ll": "0.660",
+        "auc": "0.407",
+        "p_unc": "0.929",
+        "p_per": "0.952"
+      },
+      "best": "Logit: dividend yield",
+      "best_key": "logit_dy",
+      "n": "756",
+      "share": "23.0"
+    },
+    "state_beats_persist_5pct": "none"
+  },
+  "hero": {
+    "h": "1",
+    "model": "Logit: all predictors"
+  }
+}
