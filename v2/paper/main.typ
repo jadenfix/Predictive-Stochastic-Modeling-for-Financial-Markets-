@@ -65,8 +65,9 @@
   available at the forecast origin. Returns alternate between a calm bull regime (mean
   #n.ms.bull_mean% a month, expected duration #n.ms.dur_bull months) and a volatile bear regime
   (mean #n.ms.bear_mean%, #n.ms.dur_bear months). Letting the regime transition probabilities
-  depend on inflation, valuation, volatility and recent drawdowns improves the in-sample fit
-  (likelihood ratio #n.tvtp.all.lr, #pv(n.tvtp.all.p)) but not out-of-sample accuracy. At one month, a logit on
+  depend on inflation, valuation, volatility and recent drawdowns improves the in-sample fit by the
+  likelihood ratio (#n.tvtp.all.lr, #pv(n.tvtp.all.p)), though not by BIC, and does not improve
+  out-of-sample accuracy. At one month, a logit on
   six state variables reduces the Brier score by #o.logit_all.h1.bss% relative
   to the unconditional bear frequency, against #o.persist.h1.bss% for simply knowing whether a
   confirmed bear market is under way; gradient boosting (#o.gbt_rich.h1.bss%) and dynamic model
@@ -258,7 +259,7 @@ where $Lambda$ is the logistic function and $z_(t-1)$ contains a constant and st
 predictors observed at $t - 1$: the log dividend yield, twelve-month inflation, twelve-month
 realized volatility and the drawdown from the twelve-month high. The model nests the
 fixed-transition MS-AR(1), so the likelihood-ratio test of zero slopes is chi-squared with two
-degrees of freedom per predictor. An $h$-step forecast from $t$ applies the transition matrix
+degrees of freedom per predictor. An #box[$h$-step] forecast from $t$ applies the transition matrix
 implied by $z_t$ $h$ times, because later values of the predictors are unknown at $t$.
 
 == Binary models for dated bear markets
@@ -309,8 +310,8 @@ Forecasts are made at every month-end from #o.first_origin to #o.last_origin for
 #d.horizons months. At each origin $t$ every model is re-estimated on an expanding window using only
 (i) predictors dated $s <= t$; (ii) vintage bear labels from dating the price history through $t$,
 so that a training pair $(x_s, y_(s+h))$ requires $s + h <= t$; and (iii) for the regime models,
-parameters re-estimated each January on data through the origin (#o.n_refits estimations of each
-model) with filtered probabilities from those parameters. The logits and probits are re-estimated
+parameters re-estimated each January on all returns from #d.full_start_year through the origin
+(#o.n_refits estimations of each model) with filtered probabilities from those parameters. The logits and probits are re-estimated
 every month. The elastic net and the boosted trees are re-estimated, with hyperparameter selection,
 each January and applied to the current predictors every month, which keeps their cost modest.
 Training starts in #n.data.first_valid, when all predictors are first available. The two baselines
@@ -331,7 +332,7 @@ the uncertainty of the outcome, using #d.murphy_bins equal-width forecast bins.
 
 Pairwise differences in Brier score are tested with the Diebold and Mariano (1995) statistic with
 the small-sample correction of Harvey, Leybourne and Newbold (1997). The conventional Bartlett
-window of $h - 1$ lags is too short here: bear markets last many months, so a model's advantage
+window of $h - 1$ lags (implemented as $max(h - 1, 1)$, so one lag at one month) is too short here: bear markets last many months, so a model's advantage
 over persistence persists too: at one month the first-order autocorrelation of the loss differences
 against persistence has a median of #n.acf.h1.median across models. I therefore report the tests with the conventional window and
 with #(int(d.block) - 1) lags. Because many models and horizons are compared, three further
@@ -389,7 +390,9 @@ and #n.tvtp.vol_12.p). With all four predictors the likelihood ratio is #n.tvtp.
 #n.tvtp.all.df degrees of freedom and the AIC falls from #n.tvtp.fixed_aic to #n.tvtp.all.aic, but
 the BIC, which penalizes the eight extra parameters more heavily, prefers fixed transitions
 (#n.tvtp.fixed_bic against #n.tvtp.all.bic); only #n.tvtp.n_bic_better of the five TVTP models beat
-the fixed model on BIC. The filtered bear probability of the joint model tracks the dated bear
+the fixed model on BIC. As with the drawdown alone, the joint model's low-mean regime is
+short-lived (mean #n.tvtp.all.bear_mean% a month, staying probability #n.tvtp.all.p_bear at the
+predictors' means), so its regimes are not the bull and bear regimes of the fixed model. The filtered bear probability of the joint model tracks the dated bear
 markets better in sample (AUC #n.tvtp.all.auc against #n.tvtp.fixed_auc). @fig:tvtp shows why: the
 implied probability of leaving the bull regime swings between #n.tvtp.pbb_min and
 #n.tvtp.pbb_max, against a constant #n.tvtp.pbb_fixed with fixed transitions, and it is high
@@ -428,7 +431,7 @@ their conditional coefficients should not be read separately. The pseudo-$R^2$ f
 
 == In real time, models beat the base rate; their edge over persistence is fragile
 
-@tab:oos is the central result. At the one-month horizon every model beats the unconditional
+@tab:oos is the central result. At the one-month horizon every model in the table beats the unconditional
 frequency (Brier #o.uncond.h1.brier). Persistence alone reaches #o.persist.h1.brier (skill
 #o.persist.h1.bss%). The logit on the six main predictors reaches #o.logit_all.h1.brier (skill
 #o.logit_all.h1.bss%, AUC #o.logit_all.h1.auc), and the probit and the logit that adds the
@@ -436,7 +439,11 @@ real-time state are almost identical. With the conventional Diebold-Mariano wind
 over persistence look significant (#pv(o.logit_all.h1.p_per) for the logit), but with a window
 that covers the autocorrelation of the loss differences the $p$-value rises to
 #o.logit_all.h1.p_per_long. The MS-AR(1) forecast ranks months reasonably (AUC #o.ms.h1.auc) but
-is less accurate than persistence (skill #o.ms.h1.bss%).
+is less accurate than persistence (skill #o.ms.h1.bss%). Against the unconditional frequency the window
+matters less at one month, where the number of models with a gain significant at the 5% level
+falls from #o.h1.n_sig_unc with the conventional window to #o.h1.n_sig_unc_long with
+#(int(d.block) - 1) lags, than at three months, where it falls from #o.h3.n_sig_unc to
+#o.h3.n_sig_unc_long.
 
 #include "../output/tables/oos.typ"
 
@@ -463,8 +470,9 @@ At three months the single-variable dividend-yield logit (skill #o.logit_dy.h3.b
 six-predictor logit (#o.logit_all.h3.bss%) remain ahead of persistence (#o.persist.h3.bss%), but
 by margins that no test can distinguish from zero (#pv(o.logit_dy.h3.p_per_long) and
 #o.logit_all.h3.p_per_long with the long window). At six months only the dividend-yield logit
-retains a meaningful gain (skill #o.logit_dy.h6.bss%, against #o.persist.h6.bss% for persistence),
-and the multivariate models are near zero. At twelve months no model is reliably better than the
+retains a sizable gain (skill #o.logit_dy.h6.bss%, against #o.persist.h6.bss% for persistence),
+and even that gain is not significant (#pv(o.logit_dy.h6.p_per_long) with the long window); the
+multivariate models are near zero. At twelve months no model is reliably better than the
 unconditional frequency: the best skill is #o.logit_dy.h12.bss% and the six-predictor logit has an
 AUC of #o.logit_all.h12.auc, below the 0.5 of an uninformative forecast.
 
@@ -521,8 +529,11 @@ hindsight (#o.logit_ext.h1.bss% for the logit on all #d.n_all_features predictor
 advance which model that is; it inherits the weakness of its
 members beyond three months (#o.dma_all.h12.bss% at twelve). The equal-weight average of the
 univariate logits is more conservative (#o.combo.h1.bss% at one month, #o.combo.h6.bss% at six).
-The forgetting factor matters little: with $alpha$ between 0.95 and 1 the one-month skill of DMA on
-all models ranges from #n.comb.dma_all_10.h1% to #n.comb.dma_all_095.h1%.
+The forgetting factor is not innocuous: with $alpha$ between 0.95 and 1 the one-month skill of DMA
+on all models ranges from #n.comb.dma_all_10.h1% to #n.comb.dma_all_095.h1%, a spread comparable to
+the gain of the best models over persistence, and for DMA on all models the fastest forgetting is
+the most accurate at every horizon. Because that ranking is only known in hindsight, the main
+results keep $alpha = #d.dma_alpha$.
 
 #include "../output/tables/combination.typ"
 
@@ -550,8 +561,9 @@ the rich set, pay for it with much worse reliability (#mur.gbt_rich.h12.res agai
 
 == Accounting for the number of models compared
 
-The main design compares #d.n_challengers non-baseline forecasts with persistence at four horizons,
-#o.n_tests comparisons in all. With the conventional Diebold-Mariano window, #o.n_sig_persist of
+The main design compares #d.n_challengers distinct non-baseline forecasts with persistence at four
+horizons, #o.n_tests comparisons in all (the univariate dividend-yield logit is the dividend-yield
+logit of @tab:oos and is counted once). With the conventional Diebold-Mariano window, #o.n_sig_persist of
 them are significant at the 5% level (#o.n_sig_persist_h1 at one month); with the
 #(int(d.block) - 1)-lag window #o.n_sig_persist_long remains (#o.min_p_long_model, #pv(o.min_p_persist_long)). The tests in
 @tab:spa and @tab:mcs settle the question formally. Hansen's SPA test cannot reject that no model
@@ -681,7 +693,7 @@ Brier skill at one month, mostly through better calibration, but the improvement
 from chance once the dependence of forecast errors and the number of models are taken into
 account. Beyond a few months, the dividend yield retains a small and imprecise advantage over the
 unconditional frequency, and the flexible models do worse than the base rate. These conclusions
-survive changes to the data vintage, the dating rule, the regime model, the estimation window, the
+survive changes to the dating rule, the regime model, the estimation window, the
 evaluation period and the predictor set. They are consistent with a market in which downturns are
 difficult to anticipate from public information, and they suggest that the useful contribution of
 these models is faster recognition of a bear market, not advance warning of one.
@@ -836,7 +848,7 @@ rather than forecasts.
 @tab:mspe reports the out-of-sample comparison. Panel C uses expanding-window refits from
 #n.mspe.test_start: #n.mspe.n_below1_ols of #n.mspe.n_cells OLS ratios of mean squared prediction
 errors fall below one and #n.mspe.n_cw10_ols are significant at the 10% level by the Clark and West
-(2007) test, with a best ratio of #n.mspe.min_ratio_ols. The regime probability's own current value
+(2007) test (#n.mspe.n_cw10_ols_long with #(int(d.block) - 1) Bartlett lags), with a best ratio of #n.mspe.min_ratio_ols. The regime probability's own current value
 achieves #n.mspe.qnow_h1 at one month and no gain at six months (#n.mspe.qnow_h6).
 
 The award version reached stronger conclusions for three reasons that a replication of its code

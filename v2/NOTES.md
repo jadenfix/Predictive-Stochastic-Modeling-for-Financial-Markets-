@@ -140,10 +140,10 @@ Design decisions that a reader might question:
   the table images in the PDF.
 * The analysis uses one vintage of Shiller's data, not real-time vintages; the comparison with
   `one45.csv` suggests revisions are small and confined to the latest months.
-* The pairwise Diebold-Mariano tests with the conventional h - 1 lag window reject persistence
+* The pairwise Diebold-Mariano tests with the conventional max(h - 1, 1) lag window reject persistence
   for nine one-month models, but the loss differences are highly autocorrelated (median
   first-order autocorrelation 0.85 at one month); with a 23-lag window one model remains
-  significant at 5%, and the SPA test, which accounts for the 25 models, does not reject. The
+  significant at 5%, and the SPA test, which accounts for the 24 distinct models, does not reject. The
   23-lag window and the 24-month bootstrap blocks are judgment calls; 12-month blocks give the
   same conclusion.
 

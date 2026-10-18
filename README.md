@@ -36,7 +36,7 @@ frequency.
 
 *Persistence* is the bear frequency conditional on whether the market is currently in a
 confirmed bear market. The last column is the smallest one-sided Diebold-Mariano p-value
-(23-lag HAC window) of any of the 25 non-baseline models against persistence, before any
+(23-lag HAC window) of any of the 24 distinct non-baseline models against persistence, before any
 adjustment for the number of models. Hansen's test for superior predictive ability, which makes
 that adjustment, gives p = 0.189 at one month and 0.468 across all horizons, and persistence is in
 the 90% model confidence set at every horizon. Full tables: [v2/output/tables/](v2/output/tables).
@@ -85,7 +85,7 @@ Requires [uv](https://docs.astral.sh/uv/). From the repository root:
 ```bash
 cd v2
 uv sync                          # Python 3.12+, numpy, pandas, statsmodels, scikit-learn, matplotlib, xlrd, typst
-uv run python thesis.py          # all stages from a clean output/ directory (about 25 minutes)
+uv run python thesis.py          # all stages from a clean output/ directory (about 15-25 minutes)
 uv run python thesis.py data     # or any stages: data models forecast robust tables figures paper
 uv run pytest                    # data, timing, labeling, metrics, regime and no-look-ahead tests
 ```
