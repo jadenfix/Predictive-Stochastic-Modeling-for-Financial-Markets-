@@ -80,7 +80,9 @@ PAPER_PDF = ROOT / "paper" / "Predictive_Stochastic_Modeling_v2.pdf"
 # Primary source: Robert Shiller's "U.S. Stock Markets 1871-Present and CAPE Ratio" workbook,
 # linked from https://shillerdata.com (the data page of econ.yale.edu/~shiller/data.htm points
 # there). The pinned file was downloaded on 2026-10-18 (UTC); the server reported it as last
-# modified on 2026-10-06. A refreshed workbook will fail the hash check by design.
+# modified on 2026-10-06. A refreshed workbook will fail the hash check by design. The `ver` query
+# parameter is the upload time in milliseconds (2026-10-06 14:34:58 UTC), a cache-buster added by
+# the site: the server returns the current file with or without it, so only the hash pins the vintage.
 SHILLER_PAGE = "https://shillerdata.com/"
 SHILLER_URL = (
     "https://img1.wsimg.com/blobby/go/e5e77e0b-59d1-44d9-ab25-4763ac982e53/downloads/"
