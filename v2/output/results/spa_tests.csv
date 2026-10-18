@@ -1,0 +1,10 @@
+key,label,n_models,stat,best,p_lower,p_consistent,p_upper
+h1,"Main design, h = 1",25,1.8006566,uni_drawdown,0.142,0.1885,0.205
+h3,"Main design, h = 3",25,1.1179534,uni_drawdown,0.4145,0.532,0.5575
+h6,"Main design, h = 6",25,0.6896973,logit_dy,0.598,0.83,0.8585
+h12,"Main design, h = 12",25,0.38733128,uni_infl_yoy,0.864,0.977,0.988
+joint,"Main design, all horizons",100,1.7885378,uni_drawdown,0.279,0.468,0.5025
+real15,"Dating threshold 15%, all horizons",12,0.27231998,logit_all,0.6195,0.88,0.9395
+real25,"Dating threshold 25%, all horizons",12,1.5745612,logit_all,0.183,0.2425,0.2425
+nominal20,"Nominal prices, 20%, all horizons",12,1.4828671,logit_all,0.2275,0.323,0.323
+rolling,"Rolling 30-year window, all horizons",12,0.84977723,logit_all,0.5435,0.681,0.722

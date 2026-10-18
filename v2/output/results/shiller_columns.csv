@@ -1,0 +1,15 @@
+sheet,column,name,heading,description
+Data,0,date,Date,"Month as a fractional year with two decimals (1871.01 = January, 1871.1 = October)"
+Data,1,price,P,"S&P Composite, monthly average of daily closes"
+Data,2,dividend,D,"Dividends per share, annualized (interpolated from quarterly; annual before 1926)"
+Data,3,earnings,E,"Earnings per share, annualized (interpolated from quarterly; annual before 1926)"
+Data,4,cpi,CPI,Consumer price index
+Data,5,date_fraction,Fraction,"Shiller's mid-month date fraction, used to validate the parsed months"
+Data,6,gs10,GS10,"Long-term interest rate (10-year Treasury yield from 1953), percent"
+Data,7,real_price,Price,"Real price, deflated by same-month CPI"
+Data,9,real_tr_price,Price,Real total-return price index
+Data,11,real_trs_earnings,Earnings,Real total-return-scaled earnings
+Data,12,cape,CAPE,Cyclically adjusted price-earnings ratio
+Data,14,tr_cape,TR CAPE,Total-return CAPE
+Data,17,bond_return,Returns,Gross return on 10-year Treasury bonds from month t to t + 1
+Data,18,real_bond,Returns,Real total return index of 10-year Treasury bonds

@@ -1,8 +1,8 @@
 #figure(
-  caption: [Dated bear markets in the real S&P 500, 1900-2023],
+  caption: [Dated bear markets in the real S&P 500, 1871-2026],
   kind: table,
   [
-    #set text(size: 8.5pt, hyphenate: false)
+    #set text(size: 8pt, hyphenate: false)
     #set par(justify: false, first-line-indent: 0em)
     #table(
       columns: (1fr, 1fr, 1fr, 1fr, 1fr, 1fr),
@@ -14,7 +14,11 @@
         [Peak], [Trough], [Months], [Decline (%)], [Confirmed], [Months to confirm],
       ),
       table.hline(stroke: 0.5pt),
-      [1901-06], [1903-10], [28], [−33.2], [1903-06], [24],
+      [1876-02], [1877-06], [16], [−38.5], [1877-01], [11],
+      [1881-06], [1884-06], [36], [−27.1], [1882-05], [11],
+      [1886-11], [1890-11], [48], [−22.5], [1890-11], [48],
+      [1892-05], [1893-07], [14], [−28.8], [1893-05], [12],
+      [1901-06], [1903-10], [28], [−33.1], [1903-06], [24],
       [1906-09], [1907-11], [14], [−43.4], [1907-03], [6],
       [1911-06], [1914-12], [42], [−34.8], [1913-05], [23],
       [1915-11], [1920-12], [61], [−62.9], [1917-05], [18],

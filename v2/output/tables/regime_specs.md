@@ -1,28 +1,28 @@
 **Robustness of the regime model: specification and sample**
 
-|  | MS-AR(1) | Mean and variance | Variance only | Mean only | Three regimes | MS-AR(1), 1960-1989 | MS-AR(1), 1990-2023 |
+|  | MS-AR(1) | Mean and variance | Variance only | Mean only | Three regimes | MS-AR(1), 1960-1989 | MS-AR(1), 1990-2026 |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | *Mean monthly real return (%)* | | | | | | | |
-| Bull (highest mean) | 0.84 | 0.90 | 0.60 | 0.67 | 3.45 | 0.62 | 1.05 |
-| Middle (three regimes) |  |  |  |  | 0.66 |  |  |
-| Bear (lowest mean) | −1.81 | −1.89 | 0.60 | −10.05 | −2.66 | −2.45 | −1.52 |
+| Bull (highest mean) | 0.88 | 0.95 | 0.65 | 0.71 | 3.58 | 0.62 | 1.10 |
+| Middle (three regimes) |  |  |  |  | 0.72 |  |  |
+| Bear (lowest mean) | −1.75 | −1.84 | 0.65 | −9.81 | −2.63 | −2.45 | −1.48 |
 | *Volatility (sd, %)* | | | | | | | |
-| Bull (highest mean) | 2.45 | 2.52 | 2.56 | 3.02 | 2.75 | 2.57 | 2.29 |
-| Middle (three regimes) |  |  |  |  | 2.37 |  |  |
-| Bear (lowest mean) | 5.62 | 5.56 | 6.15 | 3.02 | 5.02 | 5.63 | 5.68 |
+| Bull (highest mean) | 2.41 | 2.49 | 2.54 | 3.01 | 2.71 | 2.57 | 2.24 |
+| Middle (three regimes) |  |  |  |  | 2.33 |  |  |
+| Bear (lowest mean) | 5.57 | 5.51 | 6.12 | 3.01 | 4.91 | 5.63 | 5.63 |
 | *Expected duration (months)* | | | | | | | |
-| Bull (highest mean) | 17.9 | 19.5 | 22.7 | 35.8 | 3.3 | 10.8 | 19.3 |
-| Middle (three regimes) |  |  |  |  | 18.4 |  |  |
-| Bear (lowest mean) | 5.2 | 5.7 | 6.4 | 1.4 | 6.0 | 2.4 | 6.4 |
+| Bull (highest mean) | 16.6 | 18.1 | 21.4 | 35.2 | 3.1 | 10.8 | 17.7 |
+| Middle (three regimes) |  |  |  |  | 17.1 |  |  |
+| Bear (lowest mean) | 5.0 | 5.5 | 6.1 | 1.4 | 5.8 | 2.4 | 5.9 |
 | *Fit* | | | | | | | |
-| AR(1) coefficient | 0.194 |  |  |  |  | 0.242 | 0.138 |
+| AR(1) coefficient | 0.196 |  |  |  |  | 0.242 | 0.143 |
 | Parameters | 7 | 6 | 5 | 5 | 12 | 7 | 7 |
-| Log-likelihood | −1,990.3 | −2,007.0 | −2,019.6 | −2,027.9 | −1,991.6 | −935.9 | −1,047.3 |
-| AIC | 3,994.5 | 4,026.1 | 4,049.2 | 4,065.9 | 4,007.2 | 1,885.8 | 2,108.6 |
-| BIC | 4,027.0 | 4,053.9 | 4,072.5 | 4,089.1 | 4,062.9 | 1,912.9 | 2,136.6 |
-| Observations | 767 | 768 | 768 | 768 | 768 | 359 | 407 |
+| Log-likelihood | −2,063.5 | −2,081.2 | −2,094.8 | −2,104.1 | −2,064.1 | −935.9 | −1,119.9 |
+| AIC | 4,141.0 | 4,174.3 | 4,199.6 | 4,218.1 | 4,152.2 | 1,885.8 | 2,253.8 |
+| BIC | 4,173.7 | 4,202.4 | 4,223.0 | 4,241.5 | 4,208.4 | 1,913.0 | 2,282.4 |
+| Observations | 797 | 798 | 798 | 798 | 798 | 359 | 437 |
 | *Filtered bear probability against the dated bear state* | | | | | | | |
-| AUC | 0.799 | 0.826 | 0.742 | 0.769 | 0.874 | 0.732 | 0.899 |
-| Correlation | 0.42 | 0.46 | 0.35 | 0.30 | 0.55 | 0.31 | 0.58 |
+| AUC | 0.802 | 0.830 | 0.747 | 0.771 | 0.879 | 0.732 | 0.900 |
+| Correlation | 0.42 | 0.46 | 0.35 | 0.30 | 0.56 | 0.31 | 0.56 |
 
-Notes: Two-regime models unless stated; monthly real returns. The first five columns use 1960-2023; AIC and BIC are comparable only within that group. 'Mean and variance' is the switching mean-variance model without the AR term; 'Variance only' lets only the variance switch (its regimes share one mean and the bear regime is the high-variance one); 'Mean only' lets only the mean switch. In the three-regime model the bear regime is the one with the lowest mean. The last two columns re-estimate the main MS-AR(1) on each subsample. AUC and correlation compare the filtered bear-regime probability with the contemporaneous dated bear indicator (in sample, full-sample parameters).
+Notes: Two-regime models unless stated; monthly real returns. The first five columns use January 1960 to June 2026; AIC and BIC are comparable only within that group. 'Mean and variance' is the switching mean-variance model without the AR term; 'Variance only' lets only the variance switch (the bear regime is the high-variance one); 'Mean only' lets only the mean switch. In the three-regime model the bear regime has the lowest mean. The last two columns re-estimate the main MS-AR(1) on each subsample. AUC and correlation compare the filtered bear-regime probability with the contemporaneous dated bear indicator (in sample).
