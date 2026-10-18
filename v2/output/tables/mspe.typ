@@ -1,0 +1,51 @@
+#figure(
+  caption: [Forecasting the regime probability: unrestricted versus intercept-only models],
+  kind: table,
+  [
+    #set text(size: 8pt, hyphenate: false)
+    #set par(justify: false, first-line-indent: 0em)
+    #table(
+      columns: (2.3fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr),
+      align: (left, center, center, center, center, center, center, center, center),
+      stroke: none,
+      inset: (x: 3pt, y: 2.4pt),
+      table.hline(stroke: 0.9pt),
+      table.header(
+        [], table.cell(colspan: 4)[OLS], table.cell(colspan: 4)[Beta regression],
+        table.hline(start: 1, end: 5, stroke: 0.4pt),
+        table.hline(start: 5, end: 9, stroke: 0.4pt),
+        [], [h = 1], [h = 3], [h = 6], [h = 12], [h = 1], [h = 3], [h = 6], [h = 12],
+      ),
+      table.hline(stroke: 0.5pt),
+      table.cell(colspan: 9, align: left)[_A. Award-version design and formula (squared mean error ratio)_],
+      [CPI], [0.923], [0.735], [0.868], [0.925], [0.947], [0.904], [0.961], [0.993],
+      [Long-term rate], [0.981], [0.975], [1.008], [0.997], [0.992], [0.981], [1.002], [0.996],
+      [Real bond], [0.818], [0.862], [1.077], [0.948], [0.960], [0.949], [1.014], [0.959],
+      [Real dividend], [0.029], [0.189], [0.404], [0.179], [0.370], [0.275], [0.210], [0.276],
+      [Real total return], [0.006], [0.921], [0.942], [0.982], [0.564], [1.019], [0.956], [1.021],
+      [TR-scaled earnings], [0.363], [0.474], [0.759], [1.365], [0.819], [0.837], [0.894], [1.222],
+      [TR-CAPE], [0.822], [1.016], [1.018], [1.027], [0.706], [1.010], [1.004], [1.013],
+      table.cell(colspan: 9, inset: (y: 1.5pt))[],
+      table.cell(colspan: 9, align: left)[_B. Award-version design, correct mean squared prediction error ratio_],
+      [CPI], [1.002], [1.021], [1.005], [1.006], [0.996], [0.996], [0.997], [1.000],
+      [Long-term rate], [0.989], [1.009], [1.002], [1.001], [0.991], [1.002], [1.001], [1.002],
+      [Real bond], [0.997], [1.041], [1.019], [1.011], [0.970], [1.027], [1.006], [1.015],
+      [Real dividend], [1.154], [1.184], [1.148], [0.963], [0.951], [0.924], [0.883], [0.806],
+      [Real total return], [1.539], [1.010], [1.003], [1.002], [0.770], [1.001], [1.000], [0.999],
+      [TR-scaled earnings], [0.862], [0.879], [0.946], [0.965], [0.799], [0.861], [0.945], [1.003],
+      [TR-CAPE], [0.720], [0.994], [0.998], [0.990], [0.664], [0.996], [1.000], [0.994],
+      table.cell(colspan: 9, inset: (y: 1.5pt))[],
+      table.cell(colspan: 9, align: left)[_C. Corrected design: past-only predictors, true h-month lead, expanding window_],
+      [CPI inflation, monthly], [0.993], [0.958#super[\*\*]], [0.946#super[\*\*]], [0.942#super[\*\*\*]], [0.972#super[\*\*]], [0.936#super[\*\*\*]], [0.939#super[\*\*\*]], [0.938#super[\*\*\*]],
+      [Change in 10-year yield], [1.003], [1.001], [0.979#super[\*]], [1.005], [1.004], [0.999], [0.987], [1.003],
+      [Real bond return], [1.007], [1.003], [0.981], [1.010], [1.009], [0.998], [0.994], [1.009],
+      [Real dividend growth], [0.973#super[\*\*]], [0.983#super[\*]], [0.950#super[\*\*\*]], [0.958#super[\*\*]], [0.951#super[\*\*\*]], [0.959#super[\*\*\*]], [0.943#super[\*\*\*]], [0.948#super[\*\*\*]],
+      [Real total return], [0.852#super[\*\*\*]], [0.925#super[\*\*\*]], [0.998#super[\*]], [1.003], [0.826#super[\*\*\*]], [0.931#super[\*\*\*]], [0.981#super[\*\*]], [0.999],
+      [TR-scaled earnings growth], [0.999], [1.005], [1.022], [1.049], [0.997], [1.002], [1.010], [1.023],
+      [Change in log TR-CAPE], [0.850#super[\*\*\*]], [0.924#super[\*\*\*]], [0.997#super[\*]], [1.006], [0.833#super[\*\*\*]], [0.934#super[\*\*\*]], [0.985#super[\*\*]], [1.001],
+      [Benchmark: regime probability at t], [0.468#super[\*\*\*]], [0.914#super[\*\*\*]], [1.059], [1.021], [0.479#super[\*\*\*]], [0.888#super[\*\*\*]], [1.006], [1.004],
+      table.hline(stroke: 0.9pt),
+    )
+    #block(width: 100%, above: 0.5em)[#set text(size: 7.5pt); #set par(justify: true); #align(left)[_Notes:_ Entries are ratios of the unrestricted model's loss to the intercept-only model's loss; values below one favor the predictor. Panels A and B re-run the award version's code path on one45.csv (target Q(t-k), regime model with the next month's price, single 80/20 split with the test period starting in 2011). Panel A uses its formula (mean error)² / (mean error)², which is not a mean squared error. Panel C forecasts Q(t+h) from predictors observable at t with expanding-window refits on the Shiller data, origins 2011:04 to 2026:05 for h = 1. The benchmark row uses Q(t) itself as the predictor. Stars in Panel C mark Clark-West (2007) tests: \* p \< 0.10, \*\* p \< 0.05, \*\*\* p \< 0.01.]]
+  ],
+) <tab:mspe>

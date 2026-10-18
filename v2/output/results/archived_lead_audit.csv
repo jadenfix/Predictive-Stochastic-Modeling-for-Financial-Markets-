@@ -1,0 +1,5 @@
+column,k,pairs_future,match_future,pairs_past,match_past
+realpricelag,1,1490,1490,1490,3
+realpricelag2,2,1489,1489,1488,1
+realpricelag3,3,1488,1488,1486,1
+realpricelag4,4,1487,1487,1484,0

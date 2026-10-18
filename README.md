@@ -1,69 +1,134 @@
 # Predictive Stochastic Modeling for Financial Markets
 
-## Introduction
-Welcome to the repository for my undergraduate thesis, *Predictive Stochastic Modeling for Financial Markets*, which was honored with the **Adam Smith Award** for outstanding economic research. This project investigates how advanced financial and macroeconomic indicators can enhance the prediction of bear markets in the S&P 500 using state-of-the-art **Markov-switching autoregressive models** and **regression-based predictive techniques**.
+Can market and macroeconomic indicators forecast bear markets in the S&P 500? This repository
+holds my undergraduate thesis on that question, which received the Adam Smith Award, and a
+revised edition (v2) that rebuilds the analysis from Robert Shiller's primary data with a
+corrected data alignment, a strictly real-time out-of-sample test, newer forecasting methods and
+inference that accounts for the number of models compared.
 
-By integrating **Bayesian inference**, **time-series econometrics**, and **machine learning-inspired forecasting**, this work provides deep insights into market downturn dynamics and contributes both to academic literature and to the development of practical investment strategies.
+The short answer from v2: a two-regime Markov-switching model describes the market well, and a
+bear market is partly recognizable once it has started. At one month the best models improve on
+simply knowing whether a bear market is under way, but that improvement is within sampling error
+once the dependence of forecast errors and the number of models are taken into account, and
+beyond six months nothing reliably beats the base rate.
 
-📄 **Read the full thesis here:** [Predictive Stochastic Modeling for Financial Markets](https://github.com/jadenfix/Predictive-Stochastic-Modeling-for-Financial-Markets-/blob/main/Predictive_Stochastic_Modeling_for_Financial_Markets.pdf)
+![Real S&P 500 with dated bear markets, and the real-time one-month-ahead bear-market probability](v2/output/figures/hero.png)
 
----
+- **Revised paper (v2):** [v2/paper/Predictive_Stochastic_Modeling_v2.pdf](v2/paper/Predictive_Stochastic_Modeling_v2.pdf)
+- **Original award paper (February 2025):** [Predictive_Stochastic_Modeling_for_Financial_Markets.pdf](Predictive_Stochastic_Modeling_for_Financial_Markets.pdf)
+- **Original R code:** [code.R](code.R)
+- **The whole v2 pipeline in one script:** [v2/thesis.py](v2/thesis.py)
+- **What changed and why:** [v2/NOTES.md](v2/NOTES.md)
 
-## Project Overview
-This repository contains the complete implementation of the predictive modeling framework, including:
+## Key results
 
-- ✅ **Bayesian Markov-Switching Autoregressive Models** to estimate bear market probabilities.
-- ✅ **OLS & Beta Regression-Based Predictive Modeling** for both in-sample and out-of-sample testing.
-- ✅ **Feature Selection & Data Engineering** utilizing key stock market and macroeconomic indicators.
-- ✅ **Robust Statistical Evaluation** of predictive accuracy across various forecasting horizons.
+Real-time forecasts of a dated bear market (a 20% fall in the real S&P 500), made every month from
+January 1960 to May 2026 with every model re-estimated on data available at the time. Brier
+scores, lower is better; skill in parentheses is the reduction relative to the unconditional
+frequency.
 
-In addition, the project integrates reproducible research practices, offering comprehensive code, data, and documentation that collectively enable full replication of the study’s results.
+| Horizon | Unconditional | Persistence | MS-AR(1) filtered | Logit: dividend yield | Logit: 6 predictors | Gradient boosting | Best p vs persistence |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 1 month | 0.196 | 0.161 (17.6%) | 0.178 (9.1%) | 0.160 (18.3%) | 0.146 (25.4%) | 0.143 (26.8%) | 0.033 |
+| 3 months | 0.196 | 0.177 (10.0%) | 0.191 (2.7%) | 0.170 (13.4%) | 0.172 (12.4%) | 0.171 (13.0%) | 0.131 |
+| 6 months | 0.197 | 0.189 (3.9%) | 0.199 (−1.4%) | 0.180 (8.2%) | 0.193 (1.7%) | 0.221 (−12.3%) | 0.245 |
+| 12 months | 0.197 | 0.197 (−0.2%) | 0.200 (−1.8%) | 0.194 (1.4%) | 0.203 (−3.2%) | 0.260 (−32.1%) | 0.350 |
 
----
+*Persistence* is the bear frequency conditional on whether the market is currently in a
+confirmed bear market. The last column is the smallest one-sided Diebold-Mariano p-value
+(23-lag HAC window) of any of the 24 distinct non-baseline models against persistence, before any
+adjustment for the number of models. Hansen's test for superior predictive ability, which makes
+that adjustment, gives p = 0.189 at one month and 0.468 across all horizons, and persistence is in
+the 90% model confidence set at every horizon. Full tables: [v2/output/tables/](v2/output/tables).
 
-## How to Explore the Project
+- **Regimes.** In the MS-AR(1) model of monthly real returns (1960-2026) the bull regime has a mean
+  of 0.88% and volatility of 2.41% per month; the bear regime has a mean of −1.75% and volatility
+  of 5.57%. Expected durations are 16.6 and 5.0 months. Transition probabilities that depend on
+  inflation and recent drawdowns fit better in sample (likelihood ratio 51.0) but do not forecast
+  better out of sample.
+- **In sample**, a high dividend yield, high inflation and a weak past year are associated with bear
+  markets ([logit table](v2/output/tables/logit.md)).
+- **Out of sample**, short-horizon gains over persistence come mainly from better calibration of the
+  same information (Murphy decomposition). Elastic-net and gradient-boosting classifiers and
+  dynamic model averaging do about as well as a plain logit at one month; the flexible models are
+  the worst at long horizons.
 
-- **Code Implementation:**  
-  [Code Implementation (R)](https://github.com/jadenfix/Predictive-Stochastic-Modeling-for-Financial-Markets-/blob/main/code.R)
+## Data
 
-- **Dataset:**  
-  [one45.csv](https://github.com/jadenfix/Predictive-Stochastic-Modeling-for-Financial-Markets-/blob/main/one45.csv)
+Robert Shiller, *U.S. Stock Markets 1871-Present and CAPE Ratio* (`ie_data.xls`, sheet "Data"),
+downloaded from [shillerdata.com](https://shillerdata.com/) on 18 October 2026 (server
+last-modified date 6 October 2026), SHA-256
+`98a54927942e842ec07ffe73000998e793953708c345b6b27bb363e9ada8366a`. A pristine copy is kept in
+[v2/data/raw/ie_data.xls](v2/data/raw/ie_data.xls) (1.7 MB). The analysis uses January 1871 to
+June 2026, the last month in which prices, dividends, earnings, CPI and the long-term rate are all
+reported. The archived extract `one45.csv` used by the award version matches this workbook except
+for 17 provisional observations in its final months (October 2023 to March 2024); see
+[v2/output/tables/data_comparison.md](v2/output/tables/data_comparison.md).
 
-Feel free to clone the repository and run the provided R scripts to reproduce the analysis and explore the predictive modeling framework.
+## The data-alignment correction
 
----
+Rebuilding the code exposed three errors in the award version, which a replication of its code
+path on its own data confirms (correlation 1.000 with the published OLS coefficients and R²
+values, 0.998 with its forecast ratios): its regime model regressed the price on a column that
+holds next month's price, its "k months ahead" targets were built with `dplyr::lag` and so looked
+backwards, and its "MSPE ratio" divided squared mean errors rather than mean squared errors. In v2
+every predictor at month t uses only data published by the end of month t (CPI lagged one month,
+dividends and earnings six months), bear markets are dated with an explicit rule, filtered rather
+than smoothed probabilities are used for forecasts, and models are evaluated only on real-time
+forecasts. Tests check that no feature or forecast changes when data after the forecast origin are
+altered.
 
-## Why This Matters for Data Science & Finance
-This project demonstrates advanced skills in **financial time-series modeling**, **Bayesian statistical analysis**, and **machine learning for prediction**—areas that are crucial for quantitative finance, risk management, and data science. The methodology not only advances theoretical understanding but also has practical applications in asset pricing, volatility forecasting, and algorithmic trading strategies.
+## Reproduce
 
-### Key Skills Demonstrated:
-- **Time-Series Forecasting:** Implementation of Markov-switching models, OLS, and Beta Regression techniques.
-- **Bayesian Statistical Modeling:** Utilizing Bayesian inference and filtering techniques for dynamic regime estimation.
-- **Financial & Macroeconomic Data Analysis:** Rigorous preprocessing and feature engineering using key indicators.
-- **Predictive Analytics & Machine Learning Concepts:** Integration of modern forecasting methods into econometric modeling.
-- **R Programming for Quantitative Finance:** Development of reproducible code for robust empirical analysis.
-
-If you have any questions or would like to discuss the research further, please feel free to reach out. Let's connect and explore the exciting intersection of finance and data science! 🚀
-
-## Original research reproduction
+Requires [uv](https://docs.astral.sh/uv/). From the repository root:
 
 ```bash
-# Run from the repository root with R installed.
-Rscript install_dependencies.R
-Rscript run_research.R
+cd v2
+uv sync                          # Python 3.12+, numpy, pandas, statsmodels, scikit-learn, matplotlib, xlrd, typst
+uv run python thesis.py          # all stages from a clean output/ directory (about 15-25 minutes)
+uv run python thesis.py data     # or any stages: data models forecast robust tables figures paper
+uv run pytest                    # data, timing, labeling, metrics, regime and no-look-ahead tests
 ```
 
-The runner executes `code.R` with committed original data; pass an archived R filename as the first argument to select another script. Exploratory intermediate sections remain research artifacts. The original full exploratory script remains separate from the checked core lanes below; complete-script outputs and forecasting performance are unverified. No replacement observations or estimators are supplied.
+`thesis.py` verifies the SHA-256 of the pinned workbook (and downloads it from the URL in the
+script if the file is missing), so a future Shiller update has to be adopted deliberately. The
+pipeline is deterministic (fixed starting values and seeds, single process); two clean runs
+produce identical outputs. Every number in the paper is read from `v2/output/numbers.json` or the
+generated tables when the Typst source is compiled.
 
-## Checked Markov fitting lanes
+## Repository layout
+
+```
+one45.csv                         archived Shiller extract used by the award version (unchanged)
+code.R, run_*.R, *.R              original R code and checked fitting lanes (unchanged)
+Predictive_Stochastic_Modeling_for_Financial_Markets.pdf   original award paper (unchanged)
+v2/
+  thesis.py          the complete pipeline: data, features, dating, regime models, regressions,
+                     real-time forecasting, machine learning, combinations, inference, tables,
+                     figures and the paper build
+  tests/             pytest suite
+  data/raw/ie_data.xls          the pinned Shiller workbook
+  data/archived_reported.csv    values transcribed from the award PDF
+  output/            tables (Typst and Markdown), figures, result CSVs, numbers.json
+  paper/             main.typ and the compiled PDF
+  NOTES.md           what the original did, what was wrong, what v2 changes
+```
+
+## Original R workflow
+
+The award-version code is preserved as it was. With R installed:
 
 ```bash
-Rscript -e 'install.packages(c("xts","MSwM","dplyr","knitr","urca"), repos="https://cloud.r-project.org")'
-Rscript test_temporal.R
-Rscript run_regime_core.R
+Rscript install_dependencies.R
+Rscript run_research.R            # runs code.R on one45.csv
+Rscript test_temporal.R           # past-only alignment checks
+Rscript run_regime_core.R         # archived regime models
 Rscript run_regime_core.R --past-only
 ```
 
-The archived lane executes the original selected data transforms and MS regression formulas, with serial MSwM initialization; it skips Plotly presentation and stops before later exploratory sections. The separate past-only lane derives chronological predictors from earlier observations and drops leading missing rows; it is a new re-estimation, not reproduction of the archived coefficients or award results. Both lanes export model objects, AIC with sample counts, transition matrices and probability PNGs. Do not compare AIC across different sample sizes. `RESEARCH_MAX_ITER` optionally bounds EM iterations; the original default remains 100. Successful execution does not establish global optimizer convergence or predictive calibration.
+These scripts reproduce the archived models, including the timing issues described above; use v2
+for any forecasting conclusions.
 
-**Temporal input finding:** the archived `realpricelag` column corresponds to the next month's price, not the previous month. On finite comparable rows, every observation matches the future price within 0.01; only three match the past price. Archived fits are retrospective only. Smoothed regime probabilities also condition on later observations. Neither fitting lane demonstrates trading or forecast performance: chronological held-out evaluation is still required. The corrected input CSVs expose dates and past predictor dates for inspection.
+## Author
+
+Jaden Fix. Original thesis advised by Jonathan Kaplan.

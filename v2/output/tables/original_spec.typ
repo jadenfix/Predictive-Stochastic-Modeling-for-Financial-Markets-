@@ -1,0 +1,53 @@
+#figure(
+  caption: [Corrected award-version design: regime probability h months ahead on each predictor],
+  kind: table,
+  [
+    #set text(size: 8pt, hyphenate: false)
+    #set par(justify: false, first-line-indent: 0em)
+    #table(
+      columns: (2.1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr),
+      align: (left, center, center, center, center, center, center, center, center),
+      stroke: none,
+      inset: (x: 3pt, y: 2.4pt),
+      table.hline(stroke: 0.9pt),
+      table.header(
+        [], table.cell(colspan: 4)[OLS (percentage points)], table.cell(colspan: 4)[Beta regression (logit link)],
+        table.hline(start: 1, end: 5, stroke: 0.4pt),
+        table.hline(start: 5, end: 9, stroke: 0.4pt),
+        [], [h = 1], [h = 3], [h = 6], [h = 12], [h = 1], [h = 3], [h = 6], [h = 12],
+      ),
+      table.hline(stroke: 0.5pt),
+      [CPI inflation, monthly], [3.773#super[\*\*]], [4.037#super[\*]], [4.296#super[\*\*]], [4.326#super[\*\*\*]], [0.162#super[\*\*]], [0.200#super[\*\*]], [0.173#super[\*\*]], [0.174#super[\*\*\*]],
+      [], [(1.741)], [(2.206)], [(1.694)], [(1.490)], [(0.073)], [(0.093)], [(0.069)], [(0.059)],
+      [R² / pseudo-R²], [0.020], [0.023], [0.026], [0.026], [0.022], [0.027], [0.027], [0.030],
+      table.hline(stroke: 0.3pt),
+      [Change in 10-year yield], [−0.046], [−1.211], [3.718#super[\*\*\*]], [0.948], [0.019], [−0.048], [0.135#super[\*\*\*]], [0.033],
+      [], [(1.291)], [(1.061)], [(1.016)], [(0.790)], [(0.059)], [(0.039)], [(0.043)], [(0.027)],
+      [R² / pseudo-R²], [0.000], [0.002], [0.020], [0.001], [0.000], [0.002], [0.018], [0.001],
+      table.hline(stroke: 0.3pt),
+      [Real bond return], [−0.117], [0.932], [−4.021#super[\*\*\*]], [−1.361], [−0.020], [0.035], [−0.148#super[\*\*\*]], [−0.048],
+      [], [(1.359)], [(1.250)], [(1.179)], [(0.879)], [(0.059)], [(0.047)], [(0.048)], [(0.030)],
+      [R² / pseudo-R²], [0.000], [0.001], [0.023], [0.003], [0.000], [0.001], [0.021], [0.003],
+      table.hline(stroke: 0.3pt),
+      [Real dividend growth], [−3.525#super[\*\*\*]], [−3.054#super[\*\*]], [−3.341#super[\*\*]], [−2.661], [−0.114#super[\*\*]], [−0.103#super[\*\*]], [−0.113#super[\*\*]], [−0.107],
+      [], [(1.296)], [(1.318)], [(1.366)], [(1.972)], [(0.046)], [(0.044)], [(0.046)], [(0.071)],
+      [R² / pseudo-R²], [0.018], [0.013], [0.016], [0.010], [0.014], [0.012], [0.014], [0.013],
+      table.hline(stroke: 0.3pt),
+      [Real total return], [−9.366#super[\*\*\*]], [−6.142#super[\*\*\*]], [−5.482#super[\*\*\*]], [−1.250], [−0.417#super[\*\*\*]], [−0.241#super[\*\*\*]], [−0.208#super[\*\*\*]], [−0.039],
+      [], [(1.056)], [(1.071)], [(1.268)], [(0.950)], [(0.044)], [(0.046)], [(0.051)], [(0.032)],
+      [R² / pseudo-R²], [0.125], [0.054], [0.043], [0.002], [0.110], [0.049], [0.039], [0.002],
+      table.hline(stroke: 0.3pt),
+      [TR-scaled earnings growth], [−0.678], [−1.527], [−2.073], [−2.493#super[\*]], [−0.070], [−0.061], [−0.066], [−0.080#super[\*]],
+      [], [(2.441)], [(1.748)], [(1.625)], [(1.282)], [(0.124)], [(0.071)], [(0.062)], [(0.048)],
+      [R² / pseudo-R²], [0.001], [0.003], [0.006], [0.009], [0.002], [0.003], [0.005], [0.006],
+      table.hline(stroke: 0.3pt),
+      [Change in log TR-CAPE], [−9.299#super[\*\*\*]], [−6.133#super[\*\*\*]], [−5.560#super[\*\*\*]], [−1.437], [−0.414#super[\*\*\*]], [−0.242#super[\*\*\*]], [−0.210#super[\*\*\*]], [−0.045],
+      [], [(1.053)], [(1.088)], [(1.264)], [(0.978)], [(0.043)], [(0.047)], [(0.051)], [(0.032)],
+      [R² / pseudo-R²], [0.124], [0.054], [0.044], [0.003], [0.109], [0.049], [0.040], [0.002],
+      table.hline(stroke: 0.3pt),
+      [Observations], [796], [794], [791], [785], [796], [794], [791], [785],
+      table.hline(stroke: 0.9pt),
+    )
+    #block(width: 100%, above: 0.5em)[#set text(size: 7.5pt); #set par(justify: true); #align(left)[_Notes:_ Each cell is a separate univariate regression of the filtered bear-regime probability Q(t+h) from the MS-AR(1) model on the standardized predictor at t. OLS coefficients are in percentage points of probability. Newey-West standard errors in parentheses (7, 12 lags by horizon). Forecast origins 1960:02 to 2026:05 for h = 1. The beta-regression pseudo-R² is the squared correlation of the linear predictor with logit(Q). \* p \< 0.10, \*\* p \< 0.05, \*\*\* p \< 0.01 (two-sided). Q uses full-sample parameters, so these are in-sample associations, not forecasts.]]
+  ],
+) <tab:original_spec>
