@@ -17,5 +17,11 @@
 | 12-month change in 10-year yield | 12-month change | pp | 0 | −0.01 | 1.13 |
 | 12-month real price change | 100 x 12-month dlog real price | % | 0 (CPI 1) | 3.07 | 15.94 |
 | 12-month realized volatility | sd of monthly real returns x sqrt(12) | % annualized | 0 (CPI 1) | 11.25 | 4.93 |
+| *Additional state predictors (robustness)* | | | | | |
+| Excess CAPE yield | 100 E10/P less (yield less 10-yr inflation) | % | 0 (E 6, CPI 1) | 3.32 | 2.37 |
+| Log payout ratio | log(D / E) | log points | 6 | −0.76 | 0.30 |
+| 12-month real earnings growth | 100 x 12-month dlog real earnings | % | 6 | 2.73 | 35.31 |
+| 10-year Treasury yield | Level | % | 0 | 5.81 | 2.95 |
+| Drawdown from 12-month high | 100 x log(P / 12-month high) | % | 0 (CPI 1) | −6.69 | 9.86 |
 
 Notes: Statistics over 1960:01-2023:12. A forecast is made at the end of month t. Lag gives the publication lag applied to the inputs: CPI enters with one month, dividends (D) and earnings (E) with six. Real values are deflated by the CPI available at t. The archived 'realpricelag' columns (future prices) are never used.

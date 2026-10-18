@@ -132,3 +132,41 @@ Design decisions that a reader might question:
 * The transcription of archived values in `v2/data/archived_reported.csv` was done by hand from
   the table images in the PDF.
 * The data are a single archived Shiller extract; they are not real-time vintages.
+
+## 5. Robustness experiments and the professional rewrite (October 2026)
+
+`psm.robustness` adds experiments that each change one design choice and re-run the affected
+part of the pipeline; everything flows into `numbers.json` (key `rob`) and into new tables
+(`regime_specs`, `dating`, `robust_oos`, `predictors`, `bootstrap`) and `fig8_skill_intervals`.
+
+| Experiment | What is re-run | Headline |
+|---|---|---|
+| Regime specification: MS-AR(1), MS mean-variance, variance-only, mean-only, three regimes (1960-2023) | ML fits; AUC/correlation of the filtered bear probability with the dated state | MS-AR(1) has the lowest AIC and BIC; mean-only switching picks out crash months; three regimes split bull into calm and rebound, bear regime unchanged |
+| Subsample regimes: MS-AR(1) on 1960-1989 and 1990-2023 | ML fits | Bear volatility stable (5.6-5.7%); filtered probability tracks bears far better after 1990 (AUC 0.90 vs 0.73) |
+| Dating: 15%, 25% on real prices; 20% on nominal prices | Full real-time run (vintage labels and real-time state re-dated) | Persistence h=1 skill 15.8-24.6%; dividend-yield logit positive at 1-3 months under every rule; multivariate logit negative at 12 months under every rule |
+| Rolling 30-year windows | Full real-time run | Lower skill for persistence, MS and dividend-yield logit at every horizon |
+| Evaluation period: targets 1960-1989, 1990-2023, excluding 2007:10-2009:06 | Scoring of the main forecasts | Skill concentrated after 1990; excluding the crisis changes little |
+| Predictors: 5 more (excess CAPE yield, payout ratio, 12-month earnings growth, 10-year yield level, drawdown from 12-month high); 11 univariate logits, equal-weight combination, 11-predictor logit | Full real-time run | Drawdown is the only forecast that beats persistence (h=1, p=0.008); the other additions add nothing; combination positive to 6 months but below persistence |
+| Moving-block bootstrap (24-month blocks, 2,000 draws; 12 and 36 as checks) | Resampling of target months, all models jointly | Persistence h=1 skill 90% interval about [6.6, 30.7]%; logit gain over persistence spans zero |
+
+Across the alternative designs and the predictor experiments, 3 of 136 comparisons with
+persistence are significant at 5% (all at one month), no more than chance.
+
+Implementation notes:
+
+* `forecast.bear_forecasts` gained keyword options (`models`, `window`, `decline`/`rise`,
+  `univariate`, `combine`); with defaults it reproduces the previous forecasts exactly.
+* Logit fits now use a Newton-Raphson solver (`forecast._newton_logit`) with a statsmodels
+  fallback; it matches statsmodels to numerical tolerance (tested), every reported number in
+  `numbers.json` is unchanged, and it makes the tens of thousands of robustness refits affordable. Variants
+  run in parallel processes; a full `python -m psm.run` takes about 12 minutes.
+* `drawdown` is measured from the 12-month high (an all-time-high version is dominated by the
+  decades-long real drawdowns after 1906 and 1929).
+* Three-regime and switching-variance/mean-only fits use statsmodels' own starting values plus
+  25 random-search repetitions with a fixed seed.
+
+The paper (`paper/main.typ`) was rewritten end to end around the research question and the
+findings. The data-alignment correction is one paragraph in Section 3.1, and the regime-probability
+regressions, the replication of the award version and the MSPE comparison moved to Appendix A.
+Two references were added and verified against Crossref: Rapach, Strauss and Zhou (2010),
+doi:10.1093/rfs/hhp063, and Künsch (1989), doi:10.1214/aos/1176347265 (26 references in total).

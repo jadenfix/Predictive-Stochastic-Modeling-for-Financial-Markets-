@@ -309,3 +309,25 @@ def hero(price: pd.Series, labels: pd.Series, forecasts: pd.DataFrame, model: st
     _date_axis(axes[1], 5)
     fig.tight_layout(rect=(0, 0.03, 1, 1))
     _save(fig, directory, "hero")
+
+
+def skill_intervals(boot: pd.DataFrame, models: tuple[str, ...], horizons: tuple[int, ...], block: int,
+                    directory: Path) -> None:
+    """Out-of-sample Brier skill by horizon with 90% block-bootstrap intervals."""
+    fig, ax = plt.subplots(figsize=(7.2, 3.3))
+    ax.axhline(0, color=MUTED, lw=0.8, ls="--")
+    x = np.arange(len(horizons))
+    offsets = np.linspace(-0.24, 0.24, len(models))
+    for m, off in zip(models, offsets):
+        est = np.array([100 * boot.loc[(h, m), "bss"] for h in horizons])
+        lo = np.array([100 * boot.loc[(h, m), "bss_lo"] for h in horizons])
+        hi = np.array([100 * boot.loc[(h, m), "bss_hi"] for h in horizons])
+        ax.errorbar(x + off, est, yerr=[est - lo, hi - est], fmt="o", ms=4.5, color=MODEL_COLORS[m],
+                    elinewidth=1.2, capsize=0, label=BEAR_MODELS[m])
+    ax.set_xticks(x)
+    ax.set_xticklabels([f"{h} month{'s' if h > 1 else ''}" for h in horizons])
+    ax.set_xlabel("Forecast horizon")
+    ax.set_ylabel("Brier skill vs unconditional (%)")
+    ax.legend(loc="lower left", bbox_to_anchor=(0, 1.0), ncol=len(models), fontsize=7.5)
+    ax.set_title(f"Out-of-sample skill with 90% block-bootstrap intervals ({block}-month blocks)", pad=22)
+    _save(fig, directory, "fig8_skill_intervals")

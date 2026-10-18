@@ -50,7 +50,18 @@ FORECAST_FEATURES: tuple[Feature, ...] = (
     Feature("vol_12", "12-month realized volatility", "% annualized"),
 )
 
-FEATURE_LABELS: dict[str, str] = {f.key: f.label for f in ORIGINAL_FEATURES + FORECAST_FEATURES}
+# Additional state predictors from the same Shiller file, used in the robustness section.
+EXTRA_FEATURES: tuple[Feature, ...] = (
+    Feature("ecy", "Excess CAPE yield", "%"),
+    Feature("log_payout", "Log payout ratio", "log points"),
+    Feature("earn_growth_12", "12-month real earnings growth", "%"),
+    Feature("rate_level", "10-year Treasury yield", "%"),
+    Feature("drawdown", "Drawdown from 12-month high", "%"),
+)
+
+FEATURE_LABELS: dict[str, str] = {
+    f.key: f.label for f in ORIGINAL_FEATURES + FORECAST_FEATURES + EXTRA_FEATURES
+}
 FEATURE_LABELS["bear_now"] = "Real-time bear state"
 FEATURE_LABELS["ms_bear"] = "MS-AR bear probability (logit)"
 
@@ -131,6 +142,13 @@ def build_features(raw: pd.DataFrame) -> pd.DataFrame:
             "d_rate_12": raw["lrir10"].diff(12),
             "mom_12": 100 * (log_real_price - log_real_price.shift(12)),
             "vol_12": monthly_real.rolling(12, min_periods=12).std() * np.sqrt(12),
+            # Robustness predictors.
+            "ecy": 100 * np.exp(-(log_real_price - np.log(_ten_year_mean(real_earn_avail))))
+            - (raw["lrir10"] - 10 * (log_cpi_avail - log_cpi_avail.shift(120))),
+            "log_payout": np.log(dividend_avail / raw["earnings"].shift(FUNDAMENTALS_LAG)),
+            "earn_growth_12": 100 * (np.log(real_earn_avail) - np.log(real_earn_avail.shift(12))),
+            "rate_level": raw["lrir10"],
+            "drawdown": 100 * (log_real_price - log_real_price.rolling(12, min_periods=12).max()),
         },
         index=raw.index,
     )

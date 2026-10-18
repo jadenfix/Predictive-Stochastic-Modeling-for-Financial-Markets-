@@ -21,6 +21,7 @@ import pandas as pd
 import statsmodels.api as sm
 from statsmodels.othermod.betareg import BetaModel
 
+from psm.config import BEAR_DECLINE, BULL_RISE
 from psm.labels import date_bear_markets
 from psm.regimes import RegimeFit, bear_forecast, fit_regimes, refilter
 from psm.regressions import squeeze_unit
@@ -48,13 +49,45 @@ def _zscore(train: np.ndarray, test: np.ndarray) -> tuple[np.ndarray, np.ndarray
     return (train - mu) / sd, (test - mu) / sd
 
 
+def _newton_logit(y: np.ndarray, X: np.ndarray, maxiter: int = 50, tol: float = 1e-10) -> np.ndarray | None:
+    """Logit maximum likelihood by Newton-Raphson; None if it does not converge cleanly.
+
+    Gives the same estimates as statsmodels' Logit (to numerical tolerance) at a
+    fraction of the cost, which matters for the tens of thousands of refits in the
+    out-of-sample and robustness exercises.
+    """
+    beta = np.zeros(X.shape[1])
+    for _ in range(maxiter):
+        eta = X @ beta
+        p = 1 / (1 + np.exp(-eta))
+        w = p * (1 - p)
+        grad = X.T @ (y - p)
+        hess = (X * w[:, None]).T @ X
+        try:
+            step = np.linalg.solve(hess, grad)
+        except np.linalg.LinAlgError:
+            return None
+        beta = beta + step
+        if not np.all(np.isfinite(beta)) or np.max(np.abs(beta)) > 30:
+            return None
+        if np.max(np.abs(step)) < tol:
+            return beta
+    return None
+
+
 def _binary(link: str, y: np.ndarray, X: np.ndarray, x_new: np.ndarray) -> float:
     Xz, xz = _zscore(X, x_new[None, :])
+    Xc = sm.add_constant(Xz, has_constant="add")
+    xc = sm.add_constant(xz, has_constant="add")
+    if link == "logit":
+        beta = _newton_logit(np.asarray(y, dtype=float), Xc)
+        if beta is not None:
+            return float(1 / (1 + np.exp(-(xc @ beta)[0])))
     cls = {"logit": sm.Logit, "probit": sm.Probit}[link]
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        res = cls(y, sm.add_constant(Xz, has_constant="add")).fit(disp=0, maxiter=200)
-    return float(res.predict(sm.add_constant(xz, has_constant="add"))[0])
+        res = cls(y, Xc).fit(disp=0, maxiter=200)
+    return float(res.predict(xc)[0])
 
 
 def _logit_odds(p: np.ndarray) -> np.ndarray:
@@ -98,49 +131,87 @@ def bear_forecasts(
     bear_now: pd.Series,
     final_labels: pd.Series,
     returns: pd.Series,
-    vintages: VintageRegimes,
+    vintages: VintageRegimes | None,
     origins: pd.DatetimeIndex,
     horizons: tuple[int, ...],
     dy_key: str = "log_dy",
+    *,
+    models: tuple[str, ...] | None = None,
+    window: int | None = None,
+    decline: float = BEAR_DECLINE,
+    rise: float = BULL_RISE,
+    univariate: tuple[str, ...] = (),
+    combine: bool = False,
 ) -> pd.DataFrame:
     """Real-time probability forecasts of a bear market h months ahead.
 
-    Returns a long frame with one row per (origin, horizon, model).
+    `models` selects a subset of `BEAR_MODELS` (default: all). `window` limits
+    training to the most recent `window` forecast origins (rolling estimation;
+    default expanding). `decline` and `rise` set the dating thresholds used for the
+    vintage labels; `bear_now` and `final_labels` must be built with the same
+    thresholds. Each key in `univariate` adds a one-predictor logit named
+    ``uni_<key>``; `combine` adds ``combo``, the equal-weight average of those
+    univariate forecasts. Returns a long frame with one row per (origin, horizon, model).
     """
+    models = tuple(BEAR_MODELS) if models is None else models
+    use_ms = "ms" in models
+    if use_ms and vintages is None:
+        raise ValueError("the MS model needs vintage regime fits")
     dates = prices.index
     pos = {d: i for i, d in enumerate(dates)}
-    valid = features.notna().all(axis=1)
+    valid = features.notna().all(axis=1).to_numpy()
+    feat = features.to_numpy(dtype=float)
+    col = {c: i for i, c in enumerate(features.columns)}
     rows = []
     for origin in origins:
         t = pos[origin]
-        vintage = date_bear_markets(prices.iloc[: t + 1].to_numpy()).labels
-        fit = vintages.asof(origin)
-        filtered = refilter(returns.loc[:origin], fit).reindex(dates[: t + 1])
+        vintage = date_bear_markets(prices.iloc[: t + 1].to_numpy(), decline, rise).labels
+        if use_ms:
+            fit = vintages.asof(origin)
+            filtered = refilter(returns.loc[:origin], fit).reindex(dates[: t + 1])
         for h in horizons:
             if t + h >= len(dates):
                 continue
-            ms_h = bear_forecast(filtered, fit.transition, h).to_numpy()
             train = np.arange(0, t - h + 1)
-            train = train[valid.iloc[train].to_numpy() & np.isfinite(ms_h[train])]
+            if window is not None:
+                train = train[train > t - h - window]
+            keep = valid[train]
+            if use_ms:
+                ms_h = bear_forecast(filtered, fit.transition, h).to_numpy()
+                keep &= np.isfinite(ms_h[train])
+            train = train[keep]
             y = vintage[train + h]
-            X = features.iloc[train].to_numpy()
-            x_new = features.iloc[t].to_numpy()
+            X = feat[train]
+            x_new = feat[t]
             state = bear_now.iloc[train].to_numpy()
             state_new = bear_now.iloc[t]
-            ms_odds = _logit_odds(ms_h[train])[:, None]
-            preds = {
-                "uncond": _jeffreys(y.sum(), len(y)),
-                "persist": _jeffreys(y[state == state_new].sum(), (state == state_new).sum()),
-                "ms": _binary("logit", y, ms_odds, _logit_odds(ms_h[[t]])),
-                "logit_dy": _binary(
-                    "logit", y, features[[dy_key]].iloc[train].to_numpy(), np.array([features[dy_key].iloc[t]])
-                ),
-                "logit_all": _binary("logit", y, X, x_new),
-                "probit_all": _binary("probit", y, X, x_new),
-                "logit_state": _binary(
+            preds: dict[str, float] = {}
+            if "uncond" in models:
+                preds["uncond"] = _jeffreys(y.sum(), len(y))
+            if "persist" in models:
+                same = state == state_new
+                preds["persist"] = _jeffreys(y[same].sum(), same.sum())
+            if use_ms:
+                ms_odds = _logit_odds(ms_h[train])[:, None]
+                preds["ms"] = _binary("logit", y, ms_odds, _logit_odds(ms_h[[t]]))
+            if "logit_dy" in models:
+                j = col[dy_key]
+                preds["logit_dy"] = _binary("logit", y, feat[train][:, [j]], feat[t, [j]])
+            if "logit_all" in models:
+                preds["logit_all"] = _binary("logit", y, X, x_new)
+            if "probit_all" in models:
+                preds["probit_all"] = _binary("probit", y, X, x_new)
+            if "logit_state" in models:
+                preds["logit_state"] = _binary(
                     "logit", y, np.column_stack([X, state]), np.r_[x_new, state_new]
-                ),
-            }
+                )
+            uni = []
+            for key in univariate:
+                j = col[key]
+                uni.append(_binary("logit", y, feat[train][:, [j]], feat[t, [j]]))
+                preds[f"uni_{key}"] = uni[-1]
+            if combine and uni:
+                preds["combo"] = float(np.mean(uni))
             target_date = dates[t + h]
             for model, p in preds.items():
                 rows.append(

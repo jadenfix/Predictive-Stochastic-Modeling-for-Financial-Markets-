@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from psm.features import FEATURE_LABELS, FORECAST_FEATURES, ORIGINAL_FEATURES
+from psm.features import EXTRA_FEATURES, FEATURE_LABELS, FORECAST_FEATURES, ORIGINAL_FEATURES
 from psm.forecast import BEAR_MODELS
 from psm.regimes import RegimeFit
 from psm.regressions import Coef, FitSummary
@@ -26,6 +26,11 @@ TRANSFORMS = {
     "d_rate_12": ("12-month change", "0"),
     "mom_12": ("100 x 12-month dlog real price", "0 (CPI 1)"),
     "vol_12": ("sd of monthly real returns x sqrt(12)", "0 (CPI 1)"),
+    "ecy": ("100 E10/P less (yield less 10-yr inflation)", "0 (E 6, CPI 1)"),
+    "log_payout": ("log(D / E)", "6"),
+    "earn_growth_12": ("100 x 12-month dlog real earnings", "6"),
+    "rate_level": ("Level", "0"),
+    "drawdown": ("100 x log(P / 12-month high)", "0 (CPI 1)"),
 }
 
 
@@ -36,7 +41,8 @@ def _h(h: int) -> str:
 def variables_table(features: pd.DataFrame, sample_label: str) -> Table:
     sections = []
     for title, group in (("Monthly-change predictors (archived thesis variables)", ORIGINAL_FEATURES),
-                         ("State predictors (bear-market forecasting models)", FORECAST_FEATURES)):
+                         ("State predictors (bear-market forecasting models)", FORECAST_FEATURES),
+                         ("Additional state predictors (robustness)", EXTRA_FEATURES)):
         rows = []
         for f in group:
             s = features[f.key].dropna()
@@ -327,4 +333,187 @@ def summary_table(metrics: pd.DataFrame, horizons: tuple[int, ...]) -> Table:
             "the smallest one-sided Diebold-Mariano p-value of any model against persistence."
         ],
         stub="Horizon",
+    )
+
+
+# ------------------------------------------------------------------ robustness tables
+
+ROBUST_LABELS = {
+    "persist": "Persistence",
+    "ms": "MS-AR(1)",
+    "logit_dy": "Logit: dividend yield",
+    "logit_all": "Logit: all predictors",
+}
+
+
+def _skill_cell(r: pd.Series) -> str:
+    """Skill in percent with stars for the one-sided DM test against the unconditional frequency."""
+    return fmt(100 * r.bss, 1) + stars(r.p_uncond)
+
+
+def regime_spec_table(specs: list, quality: list[dict[str, float]]) -> Table:
+    names = [s.name for s in specs]
+
+    def per_regime(values: str, digits: int, which: int) -> list[str]:
+        out = []
+        for s in specs:
+            vals = getattr(s, values)
+            if s.k == 2:
+                out.append(fmt(vals[{0: 0, 1: None, 2: 1}[which]], digits) if which != 1 else "")
+            else:
+                out.append(fmt(vals[which], digits))
+        return out
+
+    def block(title: str, attr: str, digits: int) -> Section:
+        return Section(title, [
+            Row("Bull (highest mean)", per_regime(attr, digits, 0)),
+            Row("Middle (three regimes)", per_regime(attr, digits, 1)),
+            Row("Bear (lowest mean)", per_regime(attr, digits, 2)),
+        ])
+
+    sections = [
+        block("Mean monthly real return (%)", "means", 2),
+        block("Volatility (sd, %)", "sds", 2),
+        block("Expected duration (months)", "durations", 1),
+        Section("Fit", [
+            Row("AR(1) coefficient", [fmt(s.ar, 3) if s.ar is not None else "" for s in specs]),
+            Row("Parameters", [str(s.n_params) for s in specs]),
+            Row("Log-likelihood", [fmt(s.llf, 1) for s in specs]),
+            Row("AIC", [fmt(s.aic, 1) for s in specs]),
+            Row("BIC", [fmt(s.bic, 1) for s in specs]),
+            Row("Observations", [fmt_int(s.nobs) for s in specs]),
+        ]),
+        Section("Filtered bear probability against the dated bear state", [
+            Row("AUC", [fmt(q["auc"], 3) for q in quality]),
+            Row("Correlation", [fmt(q["corr"], 2) for q in quality]),
+        ]),
+    ]
+    return Table(
+        key="regime_specs",
+        title="Robustness of the regime model: specification and sample",
+        columns=names,
+        sections=sections,
+        notes=[
+            "Two-regime models unless stated; monthly real returns. The first five columns use 1960-2023; "
+            "AIC and BIC are comparable only within that group. 'Mean and variance' is the switching "
+            "mean-variance model without the AR term; 'Variance only' lets only the variance switch "
+            "(its regimes share one mean and the bear regime is the high-variance one); 'Mean only' lets "
+            "only the mean switch. In the three-regime model the bear regime is the one with the lowest "
+            "mean. The last two columns re-estimate the main MS-AR(1) on each subsample. AUC and "
+            "correlation compare the filtered bear-regime probability with the contemporaneous dated "
+            "bear indicator (in sample, full-sample parameters)."
+        ],
+        stub_width="1.9fr",
+        size="7.5pt",
+    )
+
+
+def robust_oos_table(variants: dict[str, pd.DataFrame], labels: dict[str, str], horizons: tuple[int, ...]) -> Table:
+    """Brier skill of the main models under each variant, one section per model."""
+    sections = []
+    for m, name in ROBUST_LABELS.items():
+        rows = []
+        for key, met in variants.items():
+            rows.append(Row(labels[key], [_skill_cell(met.loc[(h, m)]) for h in horizons], "coef"))
+        sections.append(Section(name, rows))
+    return Table(
+        key="robust_oos",
+        title="Robustness of out-of-sample Brier skill (%) to dating, estimation window and evaluation period",
+        columns=[_h(h) for h in horizons],
+        sections=sections,
+        notes=[
+            "Skill is the percentage reduction in Brier score relative to the unconditional frequency "
+            "estimated in the same variant. Each dating variant re-dates bear markets (symmetric "
+            "thresholds) and re-runs the complete real-time exercise, including the vintage labels and "
+            "the real-time state. The rolling variant estimates every model on the most recent 30 years "
+            "of training data. The evaluation-period rows score the main forecasts on subsets of target "
+            "months; the crisis excluded is 2007:10-2009:06. Stars: one-sided Diebold-Mariano test "
+            "against the unconditional frequency, * p < 0.10, ** p < 0.05, *** p < 0.01."
+        ],
+        stub_width="2.4fr",
+        size="8pt",
+    )
+
+
+def dating_table(summaries: dict[str, dict[str, float]], labels: dict[str, str], since: str) -> Table:
+    rows = [
+        Row(labels[k], [str(v["n_bears"]), str(v["n_bears_since"]), fmt(100 * v["bear_share_since"], 1),
+                        fmt(v["median_decline"], 1)])
+        for k, v in summaries.items()
+    ]
+    return Table(
+        key="dating",
+        title="Bear markets under alternative dating rules",
+        columns=["Bear markets, 1900-2023", f"Since {since}", f"Bear share since {since} (%)",
+                 "Median decline (%)"],
+        sections=[Section(None, rows)],
+        notes=["Symmetric thresholds: a bear market starts when the index falls the stated percentage below "
+               "its peak and ends when it rises the same percentage above its trough. Nominal dating uses "
+               "the S&P Composite monthly average price without deflating."],
+        stub="Dating rule",
+        stub_width="2fr",
+    )
+
+
+def predictors_table(met: pd.DataFrame, keys: list[str], horizons: tuple[int, ...]) -> Table:
+    def row(label: str, m: str) -> Row:
+        return Row(label, [_skill_cell(met.loc[(h, m)]) for h in horizons]
+                   + [fmt(met.loc[(horizons[0], m)].auc, 3)], "coef")
+
+    base = [f.key for f in FORECAST_FEATURES]
+    extra = [f.key for f in EXTRA_FEATURES]
+    sections = [
+        Section("Baseline", [row("Persistence", "persist")]),
+        Section("Univariate logits: main predictors", [row(FEATURE_LABELS[k], f"uni_{k}") for k in base if k in keys]),
+        Section("Univariate logits: additional predictors", [row(FEATURE_LABELS[k], f"uni_{k}") for k in extra if k in keys]),
+        Section("Multi-predictor forecasts", [
+            row(f"Equal-weight combination ({len(keys)} univariate logits)", "combo"),
+            row(f"Logit: all {len(keys)} predictors", "logit_ext"),
+        ]),
+    ]
+    return Table(
+        key="predictors",
+        title="Out-of-sample Brier skill (%) of individual predictors and combinations",
+        columns=[_h(h) for h in horizons] + ["AUC, h = 1"],
+        sections=sections,
+        notes=[
+            "Real-time expanding-window forecasts with the main dating rule; every model is re-estimated "
+            "at each origin on data available then. The combination averages the probability forecasts of "
+            "the univariate logits with equal weights. Skill is relative to the unconditional frequency. "
+            "Stars: one-sided Diebold-Mariano test against the unconditional frequency, * p < 0.10, "
+            "** p < 0.05, *** p < 0.01."
+        ],
+        stub_width="2.8fr",
+        size="8pt",
+    )
+
+
+def bootstrap_table(boot: pd.DataFrame, models: tuple[str, ...], horizons: tuple[int, ...], block: int,
+                    reps: int) -> Table:
+    sections = []
+    for h in horizons:
+        rows = []
+        for m in models:
+            r = boot.loc[(h, m)]
+            rows.append(Row(BEAR_MODELS.get(m, m), [
+                fmt(100 * r.bss, 1),
+                f"[{fmt(100 * r.bss_lo, 1)}, {fmt(100 * r.bss_hi, 1)}]",
+                "" if m == "persist" else f"[{fmt(100 * r.gain_lo, 1)}, {fmt(100 * r.gain_hi, 1)}]",
+                "" if m == "persist" else fmt(r.share_beats_persist, 2),
+            ]))
+        sections.append(Section(f"h = {h}", rows))
+    return Table(
+        key="bootstrap",
+        title="Block-bootstrap uncertainty of out-of-sample Brier skill",
+        columns=["Skill (%)", "90% interval", "Gain over persistence (pp), 90% interval",
+                 "Share of draws beating persistence"],
+        sections=sections,
+        notes=[
+            f"Circular moving-block bootstrap of target months with blocks of {block} months and {reps:,} "
+            "replications, resampling all models jointly. Intervals are 5th and 95th percentiles. The gain "
+            "over persistence is the model's skill minus the skill of persistence in the same draw."
+        ],
+        stub_width="2.3fr",
+        widths=["0.8fr", "1.1fr", "1.5fr", "1.2fr"],
+        size="8pt",
     )

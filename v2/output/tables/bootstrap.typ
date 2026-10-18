@@ -1,0 +1,52 @@
+#figure(
+  caption: [Block-bootstrap uncertainty of out-of-sample Brier skill],
+  kind: table,
+  [
+    #set text(size: 8pt, hyphenate: false)
+    #set par(justify: false, first-line-indent: 0em)
+    #table(
+      columns: (2.3fr, 0.8fr, 1.1fr, 1.5fr, 1.2fr),
+      align: (left, center, center, center, center),
+      stroke: none,
+      inset: (x: 3pt, y: 2.4pt),
+      table.hline(stroke: 0.9pt),
+      table.header(
+        [], [Skill (%)], [90% interval], [Gain over persistence (pp), 90% interval], [Share of draws beating persistence],
+      ),
+      table.hline(stroke: 0.5pt),
+      table.cell(colspan: 5, align: left)[_h = 1_],
+      [Persistence (real-time state)], [18.9], [\[6.6, 30.7\]], [], [],
+      [MS-AR(1) filtered probability], [10.9], [\[3.0, 19.6\]], [\[−19.6, 3.8\]], [0.14],
+      [Logit: dividend yield], [16.5], [\[0.5, 33.7\]], [\[−20.9, 16.3\]], [0.45],
+      [Logit: all predictors], [20.8], [\[7.3, 35.4\]], [\[−11.7, 15.4\]], [0.61],
+      [Probit: all predictors], [21.5], [\[8.2, 35.8\]], [\[−11.0, 16.1\]], [0.65],
+      [Logit: all predictors + state], [19.9], [\[5.3, 35.2\]], [\[−10.4, 12.6\]], [0.58],
+      table.cell(colspan: 5, inset: (y: 1.5pt))[],
+      table.cell(colspan: 5, align: left)[_h = 3_],
+      [Persistence (real-time state)], [11.5], [\[1.3, 22.1\]], [], [],
+      [MS-AR(1) filtered probability], [3.0], [\[−4.6, 11.6\]], [\[−17.1, 0.1\]], [0.05],
+      [Logit: dividend yield], [12.3], [\[−2.5, 27.7\]], [\[−16.2, 16.0\]], [0.55],
+      [Logit: all predictors], [6.2], [\[−9.1, 22.6\]], [\[−19.4, 7.8\]], [0.27],
+      [Probit: all predictors], [7.0], [\[−8.0, 23.3\]], [\[−18.6, 8.7\]], [0.31],
+      [Logit: all predictors + state], [5.1], [\[−11.1, 22.1\]], [\[−18.9, 5.8\]], [0.20],
+      table.cell(colspan: 5, inset: (y: 1.5pt))[],
+      table.cell(colspan: 5, align: left)[_h = 6_],
+      [Persistence (real-time state)], [4.9], [\[−3.2, 12.5\]], [], [],
+      [MS-AR(1) filtered probability], [−2.5], [\[−10.3, 5.3\]], [\[−14.8, −0.5\]], [0.03],
+      [Logit: dividend yield], [7.9], [\[−4.7, 21.6\]], [\[−9.2, 15.3\]], [0.67],
+      [Logit: all predictors], [−6.9], [\[−22.8, 8.7\]], [\[−25.1, 1.5\]], [0.07],
+      [Probit: all predictors], [−6.3], [\[−21.7, 9.2\]], [\[−24.5, 2.0\]], [0.08],
+      [Logit: all predictors + state], [−8.6], [\[−24.8, 7.7\]], [\[−26.3, −0.9\]], [0.04],
+      table.cell(colspan: 5, inset: (y: 1.5pt))[],
+      table.cell(colspan: 5, align: left)[_h = 12_],
+      [Persistence (real-time state)], [0.8], [\[−2.3, 4.0\]], [], [],
+      [MS-AR(1) filtered probability], [−3.5], [\[−9.0, 2.3\]], [\[−8.2, −0.3\]], [0.03],
+      [Logit: dividend yield], [1.9], [\[−8.1, 11.8\]], [\[−8.0, 9.9\]], [0.60],
+      [Logit: all predictors], [−11.1], [\[−25.6, 4.7\]], [\[−25.2, 2.3\]], [0.08],
+      [Probit: all predictors], [−11.8], [\[−26.6, 4.1\]], [\[−26.1, 1.6\]], [0.07],
+      [Logit: all predictors + state], [−12.3], [\[−27.3, 3.7\]], [\[−26.8, 1.4\]], [0.07],
+      table.hline(stroke: 0.9pt),
+    )
+    #block(width: 100%, above: 0.5em)[#set text(size: 7.5pt); #set par(justify: true); #align(left)[_Notes:_ Circular moving-block bootstrap of target months with blocks of 24 months and 2,000 replications, resampling all models jointly. Intervals are 5th and 95th percentiles. The gain over persistence is the model's skill minus the skill of persistence in the same draw.]]
+  ],
+) <tab:bootstrap>

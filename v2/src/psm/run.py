@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 
 from psm import figures, paper, report
+from psm import robustness as rb
 from psm.config import (
     ARCHIVED_REPORTED_FILE,
     BEAR_DECLINE,
@@ -27,6 +28,7 @@ from psm.config import (
 )
 from psm.data import audit_archived_leads, load_raw
 from psm.features import (
+    EXTRA_FEATURES,
     FEATURE_LABELS,
     FORECAST_FEATURES,
     ORIGINAL_FEATURES,
@@ -421,6 +423,150 @@ def main(out: Path = OUTPUT_DIR, clean: bool = True) -> None:
     figures.calibration_curves(fc, HORIZONS, FIGURE_MODELS, figs)
     figures.roc_curves(fc, HORIZONS, FIGURE_MODELS, met, figs)
     log("bear-market forecasts, out of sample")
+
+    # ------------------------------------------------------------ robustness
+    split = pd.Timestamp("1990-01-01")
+    rob: dict = {}
+
+    # Regime specifications and subsamples.
+    specs = rb.regime_specs(returns, main_fit, mv_fit, THESIS_SAMPLE.start, split)
+    quality = [rb.spec_fit_quality(s, labels.bear) for s in specs]
+    write_table(report.regime_spec_table(specs, quality), tables)
+    pd.DataFrame(
+        [
+            {"spec": s.name, "k": s.k, "llf": s.llf, "aic": s.aic, "bic": s.bic, "n_params": s.n_params,
+             "nobs": s.nobs, "ar": s.ar, **q,
+             **{f"mean_{i}": v for i, v in enumerate(s.means)}, **{f"sd_{i}": v for i, v in enumerate(s.sds)},
+             **{f"stay_{i}": v for i, v in enumerate(s.stay)}}
+            for s, q in zip(specs, quality)
+        ]
+    ).to_csv(res / "regime_specs.csv", index=False)
+    spec_keys = ["ar1", "mv", "var_only", "mean_only", "three", "pre", "post"]
+    rob["spec"] = {
+        k: {
+            "auc": _num(q["auc"], 3),
+            "corr": _num(q["corr"], 2),
+            "aic": _num(s.aic, 1),
+            "bic": _num(s.bic, 1),
+            "bull_mean": _num(s.means[0], 2),
+            "bear_mean": _num(s.means[-1], 2),
+            "bull_sd": _num(s.sds[0], 2),
+            "bear_sd": _num(s.sds[-1], 2),
+            "dur_bull": _num(s.durations[0], 1),
+            "dur_bear": _num(s.durations[-1], 1),
+            **({"mid_mean": _num(s.means[1], 2), "mid_sd": _num(s.sds[1], 2), "dur_mid": _num(s.durations[1], 1)}
+               if s.k == 3 else {}),
+        }
+        for k, s, q in zip(spec_keys, specs, quality)
+    }
+    rob["spec"]["split"] = f"{split:%Y}"
+    log("robustness: regime specifications")
+
+    # Forecasting variants: dating rule, estimation window, predictor set.
+    nominal = raw["spprice"].reindex(idx)
+    dating_rules = {"real15": (price, 0.15), "main": (price, BEAR_DECLINE), "real25": (price, 0.25),
+                    "nominal20": (nominal, BEAR_DECLINE)}
+    variant_labels = {
+        "main": "Main (real prices, 20%, expanding)",
+        "real15": "Dating threshold 15%",
+        "real25": "Dating threshold 25%",
+        "nominal20": "Nominal prices, 20%",
+        "rolling": "Rolling 30-year window",
+    }
+    dating = {k: rb.dating_summary(pr, d, THESIS_SAMPLE.start) for k, (pr, d) in dating_rules.items()}
+    dating_labels = {"real15": "Real prices, 15%", "main": "Real prices, 20% (main)",
+                     "real25": "Real prices, 25%", "nominal20": "Nominal prices, 20%"}
+    write_table(report.dating_table(dating, dating_labels, f"{THESIS_SAMPLE.start:%Y}"), tables)
+    pd.DataFrame(dating).T.to_csv(res / "dating_variants.csv", index_label="rule")
+    extra_keys = [f.key for f in EXTRA_FEATURES]
+    all_keys = FORECAST_KEYS + extra_keys
+    variants = [
+        rb.Variant(k, variant_labels[k], pr, fx, label_series(pr, decline=d, rise=d), d)
+        for k, (pr, d) in dating_rules.items() if k != "main"
+    ]
+    variants.append(rb.Variant("rolling", variant_labels["rolling"], price, fx, labels, BEAR_DECLINE,
+                               window=rb.ROLLING_WINDOW))
+    variants.append(rb.Variant("predictors", "Predictors", price, feats[all_keys], labels, BEAR_DECLINE,
+                               models=("uncond", "persist", "logit_all"), univariate=tuple(all_keys), combine=True))
+    runs = rb.run_variants(variants, returns, vint, origins, HORIZONS)
+    variant_met = {"main": rb.score(fc, rb.ROBUST_MODELS)}
+    for k in ("real15", "real25", "nominal20", "rolling"):
+        variant_met[k] = rb.score(runs[k], rb.ROBUST_MODELS)
+    for name, sub in rb.subperiods(fc, split).items():
+        variant_met[name] = rb.score(sub, rb.ROBUST_MODELS)
+        variant_labels[name] = name
+    write_table(report.robust_oos_table(variant_met, variant_labels, HORIZONS), tables)
+    pd.concat(variant_met, names=["variant"]).to_csv(res / "robustness_oos_metrics.csv")
+    pred_fc = runs["predictors"].replace({"model": {"logit_all": "logit_ext"}})
+    pred_met = rb.score(pred_fc)
+    pred_met.to_csv(res / "predictor_oos_metrics.csv")
+    write_table(report.predictors_table(pred_met, all_keys, HORIZONS), tables)
+
+    def met_numbers(met: pd.DataFrame) -> dict:
+        out: dict = {}
+        for (h, m), r in met.iterrows():
+            out.setdefault(m, {})[f"h{h}"] = {
+                "bss": _num(100 * r.bss, 1), "auc": _num(r.auc, 3),
+                "p_unc": fmt_p(r.p_uncond), "p_per": fmt_p(r.p_persist),
+            }
+        return out
+
+    sub_keys = dict(zip(rb.subperiods(fc, split), ("pre", "post", "nocrisis")))
+    rob["var"] = {sub_keys.get(k, k): met_numbers(v) for k, v in variant_met.items()}
+    rob["var_beats_persist"] = {
+        sub_keys.get(k, k): str(int((v.p_persist < 0.05).sum())) for k, v in variant_met.items()
+    }
+    rob["var_challengers"] = str(int(variant_met["main"].p_persist.notna().sum()))
+    alt = {k: v for k, v in variant_met.items() if k != "main"}
+    rob["var_alt_n"] = str(len(alt))
+    rob["var_alt_tests"] = str(sum(int(v.p_persist.notna().sum()) for v in alt.values()))
+    rob["var_alt_beats"] = str(sum(int((v.p_persist < 0.05).sum()) for v in alt.values()))
+    rob["dating"] = {
+        k: {"n": str(v["n_bears"]), "n_since": str(v["n_bears_since"]), "share": _num(100 * v["bear_share_since"], 1),
+            "median_decline": _num(v["median_decline"], 1)}
+        for k, v in dating.items()
+    }
+    rob["rolling_years"] = str(rb.ROLLING_WINDOW // 12)
+    rob["crisis"] = f"{rb.CRISIS[0]:%Y:%m} to {rb.CRISIS[1]:%Y:%m}"
+    rob["pred"] = met_numbers(pred_met)
+    uni = pred_met[pred_met.index.get_level_values("model").str.startswith("uni_")]
+    rob["pred_best"] = {
+        f"h{h}": FEATURE_LABELS[uni.loc[h].bss.idxmax().removeprefix("uni_")] for h in HORIZONS
+    }
+    rob["pred_n"] = str(len(all_keys))
+    rob["pred_n_extra"] = str(len(extra_keys))
+    rob["pred_beats_persist"] = str(int((pred_met.p_persist < 0.05).sum()))
+    rob["pred_challengers"] = str(int(pred_met.p_persist.notna().sum()))
+    log("robustness: forecasting variants")
+
+    # Block-bootstrap uncertainty of the headline skills.
+    boot_models = ("persist", "ms", "logit_dy", "logit_all", "probit_all", "logit_state")
+    boot = rb.bootstrap_skill(fc, boot_models)
+    boot.to_csv(res / "bootstrap_skill.csv")
+    write_table(report.bootstrap_table(boot, boot_models, HORIZONS, rb.BLOCK_LENGTH, rb.BOOT_REPS), tables)
+    figures.skill_intervals(boot, ("persist", "ms", "logit_dy", "logit_all"), HORIZONS, rb.BLOCK_LENGTH, figs)
+    rob["boot"] = {
+        m: {
+            f"h{h}": {
+                "lo": _num(100 * boot.loc[(h, m), "bss_lo"], 1), "hi": _num(100 * boot.loc[(h, m), "bss_hi"], 1),
+                "glo": _num(100 * boot.loc[(h, m), "gain_lo"], 1), "ghi": _num(100 * boot.loc[(h, m), "gain_hi"], 1),
+                "share": _num(boot.loc[(h, m), "share_beats_persist"], 2),
+                "share_unc": _num(boot.loc[(h, m), "share_beats_uncond"], 2),
+            }
+            for h in HORIZONS
+        }
+        for m in boot_models
+    }
+    rob["boot_block"] = str(rb.BLOCK_LENGTH)
+    rob["boot_reps"] = f"{rb.BOOT_REPS:,}"
+    sens = {b: rb.bootstrap_skill(fc, ("persist", "logit_all"), block=b) for b in (12, 36)}
+    rob["boot_sens"] = {
+        f"b{b}": {m: {"lo": _num(100 * v.loc[(1, m), "bss_lo"], 1), "hi": _num(100 * v.loc[(1, m), "bss_hi"], 1)}
+                  for m in ("persist", "logit_all")}
+        for b, v in sens.items()
+    }
+    numbers["rob"] = rob
+    log("robustness: bootstrap")
 
     # -------------------------------------------------------- other figures
     figures.price_history(price, labels.bear, figs)
