@@ -3,7 +3,9 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+    env:
+      OMP_NUM_THREADS: '2'
     defaults:
       run:
         working-directory: v2
@@ -11,4 +13,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
       - run: uv sync
+      - name: Verify the pinned Shiller workbook and build the data stage
+        run: uv run python thesis.py data
       - run: uv run pytest -q

@@ -2,7 +2,7 @@
 
 These notes record what the award version (February 2025 PDF and `code.R`) did, what was
 wrong or unclear, and what v2 changes and why. Figures quoted here for the original come from
-the PDF; every v2 number lives in `v2/output/`.
+the PDF; every v2 number lives in `v2/output/` and is produced by `v2/thesis.py`.
 
 ## 1. What the original did
 
@@ -92,33 +92,40 @@ long-term rates "robustly forecast" bear-market probabilities, and the unrestric
    Chen, S.-S. (Shiu-Sheng Chen) (2009), doi:10.1016/j.jbankfin.2008.07.013 (online 2008, issue
    February 2009), and is cited that way in v2; "Hammerschmidt" is spelled Hammerschmid.
 
+
 ## 3. What v2 changes and why
 
 | Area | v2 choice | Reason |
 |---|---|---|
+| Data | Shiller's current workbook (`ie_data.xls`, sheet "Data"), pinned by SHA-256, January 1871 to June 2026 | Primary source, longer sample, reproducible vintage |
 | Timing | Forecast origin = end of month t; CPI lagged 1 month, dividends and earnings 6 months; real values deflated by CPI_{t-1} | Every predictor at t must be observable at t |
-| Leaked columns | `realpricelag*` never read outside `replication.py` (tested) | Remove look-ahead |
+| Leaked columns | `realpricelag*` from `one45.csv` are read only by the replication of the award version | Remove look-ahead |
 | Predictors | Growth rates instead of differenced index levels; standardized coefficients | Interpretable, scale-free |
 | Bear definition | Rule-based dating on the real price: a 20% fall from a peak starts a bear market (backdated to the month after the peak), a 20% rise from the trough ends it | Observable target independent of any model; testable |
-| Regime model | statsmodels MS (switching mean and variance) and MS-AR(1), on real returns, deterministic starting-value grid, bear = lower-mean regime | Standard Hamilton (1989) specification on a stationary series |
+| Regime models | statsmodels MS and MS-AR(1) on real returns, deterministic starting-value grid, bear = lower-mean regime; TVTP MS-AR(1) with lagged predictors | Standard Hamilton (1989) specification; Diebold, Lee and Weinbach (1994) and Filardo (1994) extension |
 | Probabilities | Filtered for anything used as a forecast; smoothed only in a labeled retrospective figure | Smoothed probabilities condition on the future |
-| Regressions | Original OLS and beta specs with the forward target Q_{t+h} and Newey-West errors; logit and probit for the dated indicator | Correct direction and inference; natural binary benchmark |
-| Out of sample | Monthly expanding-window refits from 1960:01; vintage bear labels from prices through the origin; regime model re-estimated each January | Real-time evaluation with no future information |
+| Regressions | Award-version OLS and beta specs with the forward target Q_{t+h} and Newey-West errors; logit and probit for the dated indicator | Correct direction and inference; natural binary benchmark |
+| Out of sample | Monthly expanding-window refits from 1960:01; vintage bear labels from prices through the origin; regime and ML models re-estimated each January | Real-time evaluation with no future information |
+| New forecasts | Elastic-net logit and gradient boosting (hyperparameters by time-series validation inside each window), equal-weight combination and dynamic model averaging | Modern methods under the same real-time protocol |
 | Baselines | Unconditional frequency and persistence of the real-time state | Any useful model must beat both |
-| Metrics | Brier score and skill, log loss, AUC, calibration; Diebold-Mariano (HLN) and Clark-West tests | Proper scoring rules and tests of equal accuracy |
-| Replication | `psm.replication` re-runs the archived code path with its errors | Shows that the errors explain the reported numbers |
-| Horizons | 1, 3, 6, 12 months (the original also used 2, 18, 24; the replication keeps all seven) | Fewer, more interpretable horizons |
-| Beta regression | Smithson-Verkuilen compression of Q into (0, 1) | betareg requires an open interval |
+| Inference | Brier, log loss, AUC, calibration, Murphy decomposition; Diebold-Mariano with conventional and 23-lag windows; Hansen SPA and White Reality Check; model confidence set; Giacomini-White; block bootstrap | Proper scoring rules and inference that accounts for dependence and the number of models |
+| Replication | The award version's code path re-run on `one45.csv`, errors included | Shows that the errors explain the reported numbers |
+| Horizons | 1, 3, 6, 12 months (the replication keeps the original seven) | Fewer, more interpretable horizons |
 
 Design decisions that a reader might question:
 
 * **Real versus nominal dating.** The thesis works with real prices, so v2 dates real bear
   markets. This yields more episodes after 1960 (for example 1976-1980) than nominal dating
-  would, and monthly averages miss short drops such as 2020.
-* **Training on 1910-1959.** The out-of-sample models train on all data from the first month
-  with complete predictors (1910), which gives the first forecasts in 1960 about fifty years of
+  would, and monthly averages miss short drops such as 2020 (19.6% in monthly averages).
+* **Training from 1881.** The out-of-sample models train on all data from the first month with
+  complete predictors (June 1881), which gives the first forecasts in 1960 almost eighty years of
   history. Pre-1926 dividends and earnings are interpolated from annual figures; this affects
-  training rows only, all of which were historical by 1960.
+  training rows only.
+* **Sample end.** The workbook runs to October 2026, but dividends and earnings end in June 2026
+  and the latest prices, CPI and yields are provisional, so the sample ends in June 2026.
+* **Machine-learning refits.** The elastic net and boosted trees are re-estimated (with
+  hyperparameter selection) each January rather than every month, to keep the run time modest;
+  this handicaps them slightly relative to the monthly logits.
 * **Regime-probability exercise.** Panel C of the MSPE table forecasts Q_{t+h} from the
   full-sample MS-AR(1) model, as the original design did. It is kept for comparability and is
   labeled descriptive; the dated-bear-market exercise is the clean test.
@@ -131,42 +138,49 @@ Design decisions that a reader might question:
   and the beta-regression ratios match less tightly than the OLS ones.
 * The transcription of archived values in `v2/data/archived_reported.csv` was done by hand from
   the table images in the PDF.
-* The data are a single archived Shiller extract; they are not real-time vintages.
+* The analysis uses one vintage of Shiller's data, not real-time vintages; the comparison with
+  `one45.csv` suggests revisions are small and confined to the latest months.
+* The pairwise Diebold-Mariano tests with the conventional h - 1 lag window reject persistence
+  for nine one-month models, but the loss differences are highly autocorrelated (median
+  first-order autocorrelation 0.85 at one month); with a 23-lag window one model remains
+  significant at 5%, and the SPA test, which accounts for the 25 models, does not reject. The
+  23-lag window and the 24-month bootstrap blocks are judgment calls; 12-month blocks give the
+  same conclusion.
 
-## 5. Robustness experiments and the professional rewrite (October 2026)
+## 5. History
 
-`psm.robustness` adds experiments that each change one design choice and re-run the affected
-part of the pipeline; everything flows into `numbers.json` (key `rob`) and into new tables
-(`regime_specs`, `dating`, `robust_oos`, `predictors`, `bootstrap`) and `fig8_skill_intervals`.
+* **v2.0 (October 2026, first rebuild).** Python package `v2/src/psm`, data from `one45.csv`
+  (1900-2023), seven forecasting models, robustness experiments (alternative regime
+  specifications, dating rules, rolling windows, subperiods, five extra predictors, block
+  bootstrap).
+* **v2.1 (October 2026, this version).** Rebuilt from Shiller's current workbook and consolidated
+  into the single script `v2/thesis.py` (the `psm` package was removed); added TVTP regime models,
+  elastic-net and gradient-boosting classifiers with in-window validation, dynamic model
+  averaging, the Murphy decomposition, Hansen's SPA test and White's Reality Check, the model
+  confidence set and the Giacomini-White test; rewrote the paper. Eleven new references were
+  verified against Crossref (Diebold, Lee and Weinbach 1994, doi:10.1093/oso/9780198773917.003.0010;
+  Filardo 1994, doi:10.1080/07350015.1994.10524545; Friedman 2001, doi:10.1214/aos/1013203451;
+  Giacomini and White 2006, doi:10.1111/j.1468-0262.2006.00718.x; Gu, Kelly and Xiu 2020,
+  doi:10.1093/rfs/hhaa009; Hansen 2005, doi:10.1198/073500105000000063; Hansen, Lunde and Nason
+  2011, doi:10.3982/ECTA5771, authors confirmed on the Econometric Society page; Murphy 1973,
+  doi:10.1175/1520-0450(1973)012<0595:ANVPOT>2.0.CO;2; Raftery, Kárný and Ettler 2010,
+  doi:10.1198/TECH.2009.08104; White 2000, doi:10.1111/1468-0262.00152; Zou and Hastie 2005,
+  doi:10.1111/j.1467-9868.2005.00503.x), giving 37 references.
 
-| Experiment | What is re-run | Headline |
-|---|---|---|
-| Regime specification: MS-AR(1), MS mean-variance, variance-only, mean-only, three regimes (1960-2023) | ML fits; AUC/correlation of the filtered bear probability with the dated state | MS-AR(1) has the lowest AIC and BIC; mean-only switching picks out crash months; three regimes split bull into calm and rebound, bear regime unchanged |
-| Subsample regimes: MS-AR(1) on 1960-1989 and 1990-2023 | ML fits | Bear volatility stable (5.6-5.7%); filtered probability tracks bears far better after 1990 (AUC 0.90 vs 0.73) |
-| Dating: 15%, 25% on real prices; 20% on nominal prices | Full real-time run (vintage labels and real-time state re-dated) | Persistence h=1 skill 15.8-24.6%; dividend-yield logit positive at 1-3 months under every rule; multivariate logit negative at 12 months under every rule |
-| Rolling 30-year windows | Full real-time run | Lower skill for persistence, MS and dividend-yield logit at every horizon |
-| Evaluation period: targets 1960-1989, 1990-2023, excluding 2007:10-2009:06 | Scoring of the main forecasts | Skill concentrated after 1990; excluding the crisis changes little |
-| Predictors: 5 more (excess CAPE yield, payout ratio, 12-month earnings growth, 10-year yield level, drawdown from 12-month high); 11 univariate logits, equal-weight combination, 11-predictor logit | Full real-time run | Drawdown is the only forecast that beats persistence (h=1, p=0.008); the other additions add nothing; combination positive to 6 months but below persistence |
-| Moving-block bootstrap (24-month blocks, 2,000 draws; 12 and 36 as checks) | Resampling of target months, all models jointly | Persistence h=1 skill 90% interval about [6.6, 30.7]%; logit gain over persistence spans zero |
+What moved between v2.0 and v2.1 (same design, new data and sample):
 
-Across the alternative designs and the predictor experiments, 3 of 136 comparisons with
-persistence are significant at 5% (all at one month), no more than chance.
+| Quantity | v2.0 (one45.csv, 1900-2023) | v2.1 (Shiller workbook, 1871-2026:06) |
+|---|---:|---:|
+| Dated bear markets (since 1960) | 21 (9) | 25 (9) |
+| MS-AR(1) bull / bear mean, % per month | 0.84 / −1.81 | 0.88 / −1.75 |
+| MS-AR(1) expected bull / bear duration, months | 17.9 / 5.2 | 16.6 / 5.0 |
+| Logit pseudo-R², h = 1 (training from) | 0.261 (1910) | 0.196 (1881) |
+| Brier skill h = 1: persistence / logit 6 predictors | 18.9% / 20.8% | 17.6% / 25.4% |
+| Brier skill h = 3: persistence / dividend-yield logit | 11.5% / 12.3% | 10.0% / 13.4% |
+| Brier skill h = 12: dividend-yield logit / logit 6 predictors | 1.9% / −11.1% | 1.4% / −3.2% |
+| Smallest DM p vs persistence, core models (h − 1 lags) | 0.256 | 0.019 |
+| Logit gain over persistence h = 1, 90% bootstrap interval (pp) | [−11.7, 15.4] | [−5.8, 20.9] |
 
-Implementation notes:
-
-* `forecast.bear_forecasts` gained keyword options (`models`, `window`, `decline`/`rise`,
-  `univariate`, `combine`); with defaults it reproduces the previous forecasts exactly.
-* Logit fits now use a Newton-Raphson solver (`forecast._newton_logit`) with a statsmodels
-  fallback; it matches statsmodels to numerical tolerance (tested), every reported number in
-  `numbers.json` is unchanged, and it makes the tens of thousands of robustness refits affordable. Variants
-  run in parallel processes; a full `python -m psm.run` takes about 12 minutes.
-* `drawdown` is measured from the 12-month high (an all-time-high version is dominated by the
-  decades-long real drawdowns after 1906 and 1929).
-* Three-regime and switching-variance/mean-only fits use statsmodels' own starting values plus
-  25 random-search repetitions with a fixed seed.
-
-The paper (`paper/main.typ`) was rewritten end to end around the research question and the
-findings. The data-alignment correction is one paragraph in Section 3.1, and the regime-probability
-regressions, the replication of the award version and the MSPE comparison moved to Appendix A.
-Two references were added and verified against Crossref: Rapach, Strauss and Zhou (2010),
-doi:10.1093/rfs/hhp063, and Künsch (1989), doi:10.1214/aos/1176347265 (26 references in total).
+The one-month advantage of the multivariate logit over persistence is larger in v2.1, and its
+conventional DM test now rejects at 5%; the HAC window, the bootstrap and the SPA test show that
+this is not robust. The qualitative conclusions are unchanged.
