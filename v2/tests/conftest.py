@@ -1,9 +1,19 @@
+import sys
+from pathlib import Path
+
 import pandas as pd
 import pytest
 
-from psm.data import load_raw
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+import thesis  # noqa: E402
 
 
 @pytest.fixture(scope="session")
-def raw() -> pd.DataFrame:
-    return load_raw().frame.loc[:"2023-12-01"]
+def shiller() -> thesis.ShillerData:
+    return thesis.load_shiller()
+
+
+@pytest.fixture(scope="session")
+def panel(shiller: thesis.ShillerData) -> pd.DataFrame:
+    return shiller.panel
