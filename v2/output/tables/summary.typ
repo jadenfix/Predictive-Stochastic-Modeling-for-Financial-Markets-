@@ -20,6 +20,6 @@
       [12 months], [0.197], [0.197 (−0.2%)], [0.200 (−1.8%)], [0.194 (1.4%)], [0.203 (−3.2%)], [0.260 (−32.1%)], [0.350],
       table.hline(stroke: 0.9pt),
     )
-    #block(width: 100%, above: 0.5em)[#set text(size: 7.5pt); #set par(justify: true); #align(left)[_Notes:_ Lower is better. Real-time expanding-window forecasts. The last column is the smallest one-sided Diebold-Mariano p-value (23 Bartlett lags) against persistence among the 25 non-baseline models of the main design, not adjusted for multiple comparisons.]]
+    #block(width: 100%, above: 0.5em)[#set text(size: 7.5pt); #set par(justify: true); #align(left)[_Notes:_ Lower is better. Real-time expanding-window forecasts. The last column is the smallest one-sided Diebold-Mariano p-value (23 Bartlett lags) against persistence among the 24 non-baseline models of the main design, not adjusted for multiple comparisons.]]
   ],
 ) <tab:summary>

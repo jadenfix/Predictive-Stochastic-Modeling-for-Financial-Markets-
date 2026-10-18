@@ -3,11 +3,11 @@
 |  | Models | Best model | p-value | Reality Check p / GW stat (DM p) |
 |---|---:|---:|---:|---:|
 | *Superior predictive ability against persistence* | | | | |
-| Main design, h = 1 | 25 | Univariate logit: Drawdown from 12-month high | 0.189 | 0.205 |
-| Main design, h = 3 | 25 | Univariate logit: Drawdown from 12-month high | 0.532 | 0.557 |
-| Main design, h = 6 | 25 | Logit: dividend yield | 0.830 | 0.859 |
-| Main design, h = 12 | 25 | Univariate logit: CPI inflation, 12-month | 0.977 | 0.988 |
-| Main design, all horizons | 100 | Univariate logit: Drawdown from 12-month high | 0.468 | 0.502 |
+| Main design, h = 1 | 24 | Univariate logit: Drawdown from 12-month high | 0.189 | 0.205 |
+| Main design, h = 3 | 24 | Univariate logit: Drawdown from 12-month high | 0.532 | 0.557 |
+| Main design, h = 6 | 24 | Logit: dividend yield | 0.830 | 0.859 |
+| Main design, h = 12 | 24 | Univariate logit: CPI inflation, 12-month | 0.977 | 0.988 |
+| Main design, all horizons | 96 | Univariate logit: Drawdown from 12-month high | 0.468 | 0.502 |
 | Dating threshold 15%, all horizons | 12 | Logit: 6 main predictors | 0.880 | 0.940 |
 | Dating threshold 25%, all horizons | 12 | Logit: 6 main predictors | 0.242 | 0.242 |
 | Nominal prices, 20%, all horizons | 12 | Logit: 6 main predictors | 0.323 | 0.323 |

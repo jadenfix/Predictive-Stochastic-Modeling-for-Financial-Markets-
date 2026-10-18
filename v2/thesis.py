@@ -692,13 +692,14 @@ def diebold_mariano(loss_model: np.ndarray, loss_ref: np.ndarray, horizon: int, 
     return stat, float(stats.t.cdf(stat, df=n - 1))
 
 
-def clark_west(actual: np.ndarray, pred_restricted: np.ndarray, pred_unrestricted: np.ndarray, horizon: int) -> tuple[float, float]:
+def clark_west(actual: np.ndarray, pred_restricted: np.ndarray, pred_unrestricted: np.ndarray, horizon: int,
+               lags: int | None = None) -> tuple[float, float]:
     """Clark-West (2007) MSPE-adjusted test for nested models; one-sided p-value for H1: the
-    unrestricted model is more accurate."""
+    unrestricted model is more accurate. Bartlett HAC variance with `lags` lags, by default max(h - 1, 1)."""
     e1 = np.asarray(actual) - np.asarray(pred_restricted)
     e2 = np.asarray(actual) - np.asarray(pred_unrestricted)
     f = e1**2 - (e2**2 - (np.asarray(pred_restricted) - np.asarray(pred_unrestricted)) ** 2)
-    var = hac_variance(f, max(horizon - 1, 1))
+    var = hac_variance(f, max(horizon - 1, 1) if lags is None else lags)
     if var <= 0:
         return float("nan"), float("nan")
     stat = float(f.mean() / np.sqrt(var / len(f)))
@@ -811,7 +812,8 @@ def wide_losses(fc: pd.DataFrame, horizon: int) -> tuple[pd.DataFrame, np.ndarra
 
 def score(fc: pd.DataFrame, models: Iterable[str] | None = None) -> pd.DataFrame:
     """Brier score, skill relative to the unconditional frequency, log loss, AUC and one-sided
-    Diebold-Mariano p-values against both baselines, per (horizon, model)."""
+    Diebold-Mariano p-values against both baselines (conventional window and BLOCK - 1 lags), per
+    (horizon, model)."""
     rows = []
     for h in sorted(fc.horizon.unique()):
         wide, y = wide_losses(fc, h)
@@ -830,6 +832,8 @@ def score(fc: pd.DataFrame, models: Iterable[str] | None = None) -> pd.DataFrame
                 "log_loss": log_loss(p, y),
                 "auc": auc(p, y),
                 "p_uncond": diebold_mariano(loss[m].to_numpy(), loss["uncond"].to_numpy(), h)[1]
+                if m != "uncond" else np.nan,
+                "p_uncond_long": diebold_mariano(loss[m].to_numpy(), loss["uncond"].to_numpy(), h, BLOCK - 1)[1]
                 if m != "uncond" else np.nan,
                 "p_persist": diebold_mariano(loss[m].to_numpy(), loss["persist"].to_numpy(), h)[1]
                 if m not in BASELINES and "persist" in loss else np.nan,
@@ -1304,6 +1308,9 @@ ML_MODELS = ("enet", "enet_rich", "gbt", "gbt_rich")
 MAIN_MODELS = CORE_MODELS + ("tvtp",) + ML_MODELS + UNIVARIATE + ("logit_ext", "combo")
 ROBUST_MODELS = ("uncond", "persist", "ms", "logit_dy", "logit_all")
 DMA_ALL_MEMBERS = CORE_MODELS + ("tvtp",) + ML_MODELS
+# The univariate dividend-yield logit is the same model as "logit_dy". It stays in the combinations and
+# the predictor table but is counted once in procedures over the set of models (SPA, MCS, test counts).
+DUPLICATES = {"uni_log_dy": "logit_dy"}
 
 
 def _jeffreys(successes: float, n: float) -> float:
@@ -1488,6 +1495,7 @@ def run_forecasts(specs: list[RunSpec], features: pd.DataFrame, returns: pd.Seri
     `features` holds all predictors; the training sample of every model is the set of origins at
     which all of them are observed. Returns one long frame per design, with one row per (origin,
     horizon, model), and, for the first design, the vintage labels and chosen ML hyperparameters.
+    Machine-learning fits are cached per (design, model, horizon) between January refits.
     """
     dates = features.index
     pos = {d: i for i, d in enumerate(dates)}
@@ -1498,7 +1506,7 @@ def run_forecasts(specs: list[RunSpec], features: pd.DataFrame, returns: pd.Seri
     rows: dict[str, list[dict]] = {s.key: [] for s in specs}
     vintage_store: dict[pd.Timestamp, np.ndarray] = {}
     ml_choices: list[dict] = []
-    ml_fits: dict[tuple[str, int], MLFit] = {}
+    ml_fits: dict[tuple[str, str, int], MLFit] = {}
     main = specs[0]
     for n_done, origin in enumerate(origins):
         t = pos[origin]
@@ -1562,11 +1570,13 @@ def run_forecasts(specs: list[RunSpec], features: pd.DataFrame, returns: pd.Seri
                     rich = name.endswith("_rich")
                     Xm = np.column_stack([X, state]) if rich else X[:, base_cols]
                     xm = np.r_[x_new, state_new] if rich else x_new[base_cols]
-                    if origin.month == 1 or (name, h) not in ml_fits:
-                        ml_fits[(name, h)] = fit_ml(kind, Xm, y, h)
-                        ml_choices.append({"origin": origin, "model": name, "horizon": h,
-                                           "params": str(ml_fits[(name, h)].params)})
-                    preds[name] = ml_fits[(name, h)].predict(xm)
+                    key = (spec.key, name, h)  # each design keeps its own fits
+                    if origin.month == 1 or key not in ml_fits:
+                        ml_fits[key] = fit_ml(kind, Xm, y, h)
+                        if spec is main:
+                            ml_choices.append({"origin": origin, "model": name, "horizon": h,
+                                               "params": str(ml_fits[key].params)})
+                    preds[name] = ml_fits[key].predict(xm)
                 target = dates[t + h]
                 y_final = int(spec.labels["bear"].iloc[t + h])
                 for model, p in preds.items():
@@ -1661,7 +1671,8 @@ def mspe_summary(fc: pd.DataFrame) -> pd.DataFrame:
             col = model.lower()
             r_pred, u_pred = g[f"{col}_restricted"].to_numpy(), g[col].to_numpy()
             stat, p = clark_west(a, r_pred, u_pred, h)
-            rows.append({"model": model, "predictor": key, "k": h, "n": len(a), "cw_stat": stat, "cw_p": p,
+            p_long = clark_west(a, r_pred, u_pred, h, BLOCK - 1)[1]
+            rows.append({"model": model, "predictor": key, "k": h, "n": len(a), "cw_stat": stat, "cw_p": p, "cw_p_long": p_long,
                          "mspe_ratio": np.mean((u_pred - a) ** 2) / np.mean((r_pred - a) ** 2)})
     return pd.DataFrame(rows)
 
@@ -2943,7 +2954,12 @@ def stage_robust(d: dict, f: dict) -> dict:
     fc, variants = f["fc"], f["variants"]
     met = score(fc)
     write_csv(met, "bear_oos_metrics.csv")
-    challengers = tuple(m for m in MAIN_MODELS + ("dma_uni", "dma_all") if m not in BASELINES)
+    for alias, model in DUPLICATES.items():
+        a, b = (fc[fc.model == k].sort_values(["horizon", "origin"]).p.to_numpy() for k in (alias, model))
+        if not np.allclose(a, b, rtol=0, atol=1e-12):
+            raise RuntimeError(f"{alias} is listed as a duplicate of {model} but its forecasts differ")
+    all_models = tuple(m for m in MAIN_MODELS + ("dma_uni", "dma_all") if m not in DUPLICATES)
+    challengers = tuple(m for m in all_models if m not in BASELINES)
 
     variant_met = {"main": score(fc, ROBUST_MODELS)}
     for key, run in variants.items():
@@ -2975,7 +2991,6 @@ def stage_robust(d: dict, f: dict) -> dict:
 
     rng = np.random.default_rng(SEED)
     mcs_rows, spa_rows, gw_rows, acf = [], [], {}, {}
-    all_models = MAIN_MODELS + ("dma_uni", "dma_all")
     for h in HORIZONS:
         wide, y = wide_losses(fc, h)
         loss = wide.sub(y, axis=0) ** 2
@@ -3050,7 +3065,8 @@ def metric_numbers(met: pd.DataFrame) -> dict:
     for (h, m), r in met.iterrows():
         out.setdefault(m, {})[f"h{h}"] = {
             "brier": _n(r.brier, 3), "bss": _n(100 * r.bss, 1), "ll": _n(r.log_loss, 3) if "log_loss" in r else "",
-            "auc": _n(r.auc, 3), "p_unc": fmt_p(r.p_uncond), "p_per": fmt_p(r.p_persist),
+            "auc": _n(r.auc, 3), "p_unc": fmt_p(r.p_uncond), "p_unc_long": fmt_p(r.p_uncond_long),
+            "p_per": fmt_p(r.p_persist),
             "p_per_long": fmt_p(r.p_persist_long),
         }
     return out
@@ -3188,6 +3204,7 @@ def stage_tables(d: dict, m: dict, f: dict, r: dict) -> None:
     numbers["mspe"] = {
         "test_start": month_label(m["first_test"]), "n_below1_ols": str(int((ols_c.mspe_ratio < 1).sum())),
         "n_cells": str(len(ols_c)), "n_cw10_ols": str(int((ols_c.cw_p < 0.10).sum())),
+        "n_cw10_ols_long": str(int((ols_c.cw_p_long < 0.10).sum())),
         "min_ratio_ols": _n(ols_c.mspe_ratio.min(), 3), **{f"qnow_h{h}": _n(q_now.loc[h, "mspe_ratio"], 3) for h in HORIZONS},
     }
     reported = pd.read_csv(ARCHIVED_REPORTED_FILE)
@@ -3253,7 +3270,10 @@ def stage_tables(d: dict, m: dict, f: dict, r: dict) -> None:
         o[f"h{h}"] = {"n": f"{int(sub.loc['uncond', 'n']):,}", "share": _n(100 * sub.loc["uncond", "bear_share"], 1),
                       "best": MODEL_LABELS[best], "best_key": best,
                       "n_beat_persist": str(int((sub.loc[list(challengers)].brier < sub.loc["persist", "brier"]).sum())),
-                      "n_beat_uncond": str(int((sub.loc[list(challengers)].bss > 0).sum()))}
+                      "n_beat_uncond": str(int((sub.loc[list(challengers)].bss > 0).sum())),
+                      # gains over the unconditional frequency significant at 5%, conventional and long window
+                      "n_sig_unc": str(int((sub.loc[["persist", *challengers]].p_uncond < 0.05).sum())),
+                      "n_sig_unc_long": str(int((sub.loc[["persist", *challengers]].p_uncond_long < 0.05).sum()))}
     ch = met[met.index.get_level_values("model").isin(challengers)]
     o["n_tests"] = str(len(ch))
     o["n_sig_persist"] = str(int((ch.p_persist < 0.05).sum()))
